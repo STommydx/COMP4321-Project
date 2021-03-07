@@ -28,22 +28,13 @@ public class RocksStringMap<V extends Serializable> {
 
     public V get(String key) throws RocksDBException, IOException, ClassNotFoundException {
         byte[] valBytes = db.get(key.getBytes());
-        if (valBytes == null) return null;
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(valBytes)) {
-            try (ObjectInputStream ois = new ObjectInputStream(bis)) {
-                return (V) ois.readObject();
-            }
-        }
+        //noinspection unchecked
+        return (V) SerializationUtils.deserialize(valBytes);
     }
 
     public V put(String key, V value) throws RocksDBException, IOException, ClassNotFoundException {
         V prevValue = get(key);
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-                oos.writeObject(value);
-            }
-            db.put(key.getBytes(), bos.toByteArray());
-        }
+        db.put(key.getBytes(), SerializationUtils.serialize(value));
         return prevValue;
     }
 
