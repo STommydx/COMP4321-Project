@@ -25,6 +25,10 @@ public class RocksSandbox {
             System.out.println("According to Tommy's DB, Janice is a " + db.get("janice").toString());
             System.out.println("According to Tommy's DB, Kelvin is a " + db.get("kelvin").toString());
 
+            for (RocksStringMap<ArrayList<String>>.Iterator it = db.iterator(); it.isValid(); it.next()) {
+                System.out.println("According to Tommy's DB, we found " + it.key() + " is a " + it.value().toString());
+            }
+
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
