@@ -1,5 +1,6 @@
 package space.stdx.rockssandbox;
 
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -13,6 +14,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import org.jsoup.HttpStatusException;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.print.Doc;
 import java.lang.RuntimeException;
 import java.util.stream.Collectors;
@@ -157,7 +159,7 @@ public class Crawler {
 			/* start to crawl on the page */
 			try {
 				Response returns = this.getResponse(focus.url);
-				var res = returns.bufferUp();
+				Response res = returns.bufferUp();
 				Document doc = res.parse();
 
 				// Check lang
@@ -174,9 +176,9 @@ public class Crawler {
 					System.out.print(word + ", ");
 		
 				Vector<String> links = this.extractLinks(doc);
-				System.out.printf("\n\nLinks:");
+//				System.out.printf("\n\nLinks:");
 				for(int i=0;i<links.size();++i) {
-					var link = links.get(i);
+					String link = links.get(i);
 					link = urlPreprocess(focus.url, link);
 					links.set(i, link);
 //					System.out.println("link: "+link);
@@ -203,7 +205,7 @@ public class Crawler {
 				documentRecord.setLastModificationDate(new Date(lastModified));
 				documentRecord.setFreqTable(freqTable);
 
-				var linksList = links.stream().map(a->{
+				ArrayList<URL> linksList = links.stream().map(a->{
 						URL url;
 						try {
 							url = new URL(a);
@@ -221,9 +223,11 @@ public class Crawler {
 			} catch (HttpStatusException e) {
 	            // e.printStackTrace ();
 				System.out.printf("\nLink Error: %s\n", focus.url);
-	    	} catch (IOException e) {
+	    	} catch(SSLHandshakeException e){
+				System.out.printf("\nSSL Error: %s\n", focus.url);
+			} catch (IOException e) {
 	    		e.printStackTrace();
-	    	} catch (RevisitException e) {
+	    	}  catch (RevisitException e) {
 	    	}
 		}
 		
@@ -274,7 +278,7 @@ public class Crawler {
 		System.out.println("\nSuccessfully Returned");
 
 		System.out.println("\n-------------document records printing------------------");
-		for (var i:dr){
+		for (DocumentRecord i : dr){
 			System.out.println(i.toString());
 		}
 		System.out.println("---------------document records printing finished---------------");
