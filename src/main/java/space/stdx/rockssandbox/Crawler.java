@@ -1,6 +1,9 @@
-import java.util.Vector;
-import java.util.HashSet;
-import java.util.StringTokenizer;
+package space.stdx.rockssandbox;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+
 import org.jsoup.Jsoup;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Response;
@@ -9,7 +12,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
 import org.jsoup.HttpStatusException;
+
+import javax.print.Doc;
 import java.lang.RuntimeException;
+import java.util.stream.Collectors;
 
 /** The data structure for the crawling queue.
  */
@@ -35,7 +41,11 @@ class RevisitException
 public class Crawler {
 	private HashSet<String> urls;     // the set of urls that have been visited before
 	public Vector<Link> todos; // the queue of URLs to be crawled
-	private int max_crawl_depth = 1;  // feel free to change the depth limit of the spider.
+	private int max_crawl_depth = 100;  // feel free to change the depth limit of the spider.
+	private int counter = 0; //\ to count the number of retrieved pages
+	static List<DocumentRecord> dr = new ArrayList<>();
+
+	static final int MAX_NUMBER_PAGES = 30; // max page
 	
 	Crawler(String _url) {
 		this.todos = new Vector<Link>();
@@ -53,8 +63,11 @@ public class Crawler {
 		if (this.urls.contains(url)) {
 			throw new RevisitException(); // if the page has been visited, break the function
 		 }
-		
-		Connection conn = Jsoup.connect(url).followRedirects(false);
+
+
+		Connection conn = null;
+
+		conn = Jsoup.connect(url).followRedirects(false);
 		// the default body size is 2Mb, to attain unlimited page, use the following.
 		// Connection conn = Jsoup.connect(this.url).maxBodySize(0).followRedirects(false);
 		Response res;
@@ -65,7 +78,7 @@ public class Crawler {
 			 if(res.hasHeader("location")) {
 				 String actual_url = res.header("location");
 				 if (this.urls.contains(actual_url)) {
-					throw new RevisitException();
+				 	 throw new RevisitException();
 				 }
 				 else {
 					 this.urls.add(actual_url);
@@ -77,15 +90,16 @@ public class Crawler {
 		} catch (HttpStatusException e) {
 			throw e;
 		}
+
 		/* Get the metadata from the result */
-		String lastModified = res.header("last-modified");
-		int size = res.bodyAsBytes().length;
-		String htmlLang = res.parse().select("html").first().attr("lang");
-		String bodyLang = res.parse().select("body").first().attr("lang");
-		String lang = htmlLang + bodyLang;
-		System.out.printf("Last Modified: %s\n", lastModified);
-		System.out.printf("Size: %d Bytes\n", size);
-		System.out.printf("Language: %s\n", lang);
+//		String lastModified = res.header("last-modified");
+//		int size = res.bodyAsBytes().length;
+//		String htmlLang = res.parse().select("html").first().attr("lang");
+//		String bodyLang = res.parse().select("body").first().attr("lang");
+//		String lang = htmlLang + bodyLang;
+//		System.out.printf("Last Modified: %s\n", lastModified);
+//		System.out.printf("Size: %d Bytes\n", size);
+//		System.out.printf("Language: %s\n", lang);
 		return res;
 	}
 	
@@ -97,7 +111,7 @@ public class Crawler {
 	public Vector<String> extractWords(Document doc) {
 		 Vector<String> result = new Vector<String>();
 		// ADD YOUR CODES HERE
-		 String contents = doc.body().text(); 
+		 String contents = doc.body().text();
 	     StringTokenizer st = new StringTokenizer(contents);
 	     while (st.hasMoreTokens()) {
             result.add(st.nextToken());
@@ -116,11 +130,12 @@ public class Crawler {
         Elements links = doc.select("a[href]");
         for (Element link: links) {
         	String linkString = link.attr("href");
-        	// filter out emails
-        	if (linkString.contains("mailto:")) {
-        		continue;
-        	}
-            result.add(link.attr("href"));
+        	// filter out false link
+			if (!filterUrl(linkString)) {
+//				System.out.printf("linkString: %s\n", linkString);
+				continue;
+			}
+            result.add(linkString);
         }
         return result;
 	}
@@ -133,10 +148,25 @@ public class Crawler {
 			Link focus = this.todos.remove(0);
 			if (focus.level > this.max_crawl_depth) break; // stop criteria
 			if (this.urls.contains(focus.url)) continue;   // ignore pages that has been visited
+			if (this.counter >= MAX_NUMBER_PAGES) {  // stop when number of pages exceed the constant
+				break;
+			} else {
+				counter++;
+			}
+
 			/* start to crawl on the page */
 			try {
-				Response res = this.getResponse(focus.url);
+				Response returns = this.getResponse(focus.url);
+				var res = returns.bufferUp();
 				Document doc = res.parse();
+
+				// Check lang
+				String htmlLang = doc.select("html").first().attr("lang");
+				String bodyLang = doc.select("body").first().attr("lang");
+				String lang = htmlLang + bodyLang;
+				if (!lang.toLowerCase().contains("en"))
+					continue;
+				// Check lang end
 				
 				Vector<String> words = this.extractWords(doc);		
 				System.out.println("\nWords:");
@@ -145,10 +175,49 @@ public class Crawler {
 		
 				Vector<String> links = this.extractLinks(doc);
 				System.out.printf("\n\nLinks:");
-				for(String link: links) {
-					System.out.println(link);
+				for(int i=0;i<links.size();++i) {
+					var link = links.get(i);
+					link = urlPreprocess(focus.url, link);
+					links.set(i, link);
+//					System.out.println("link: "+link);
 					this.todos.add(new Link(link, focus.level + 1)); // add links
 				}
+
+				// retrieving data
+				String lastModified = res.header("Last-Modified");
+				if (lastModified==null || lastModified.equals("")){
+					lastModified = res.header("Date");
+				}
+				int size = res.bodyAsBytes().length;
+
+				// count keywords
+				TreeMap<String, Integer> freqTable = new TreeMap<>();
+				for (String item : words)
+					freqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
+
+
+
+				// Calling document record to serialise the retrieved data
+				DocumentRecord documentRecord = new DocumentRecord(new URL(focus.url));
+				documentRecord.setTitle(res.parse().title());
+				documentRecord.setLastModificationDate(new Date(lastModified));
+				documentRecord.setFreqTable(freqTable);
+
+				var linksList = links.stream().map(a->{
+						URL url;
+						try {
+							url = new URL(a);
+						} catch (MalformedURLException e){
+							System.out.println("exception: "+ a);
+							return null;
+						}
+						return url;
+					}).collect(Collectors.toCollection(ArrayList::new));
+				documentRecord.setChildLinks(linksList);
+
+				dr.add(documentRecord);
+
+
 			} catch (HttpStatusException e) {
 	            // e.printStackTrace ();
 				System.out.printf("\nLink Error: %s\n", focus.url);
@@ -159,12 +228,56 @@ public class Crawler {
 		}
 		
 	}
+
+	/**
+	 * To process relative url to absolute url.
+	 * If it is absolute path, i.e., contains 'http' keyword, returns url.
+	 * currentUrl and url shall not be empty or null
+	 * @param currentUrl the url of the page it is processing at
+	 * @param url the url retrieved in the current url
+	 * @return processed URL
+	 */
+	private static String urlPreprocess(String currentUrl, String url){
+		if (url.contains("http"))
+			return url;
+		else {
+			if (currentUrl.endsWith("/") && url.startsWith("/"))
+				currentUrl = currentUrl.substring(0, currentUrl.length()-1);
+			return currentUrl + url;
+		}
+	}
+
+	/**
+	 * To filter out unwanted junk links
+	 * return false if the link is unwanted
+	 * @param linkString the link to be processed
+	 * @return if the link is wanted
+	 */
+	private boolean filterUrl(String linkString){
+		if (linkString.trim().isEmpty()){
+			return false;
+		} else if (linkString.contains("mailto:")) {
+			return false;
+		} else if (linkString.contains("javascript")) {
+			return false;
+		} else if (linkString.charAt(0) == '#'){
+			return false;
+		}
+
+		return true;
+	}
 	
 	public static void main (String[] args) {
-		String url = "http://www.cs.ust.hk/~dlee/4321/";
+		String url = "https://www.cse.ust.hk/";
 		Crawler crawler = new Crawler(url);
 		crawler.crawlLoop();
 		System.out.println("\nSuccessfully Returned");
+
+		System.out.println("\n-------------document records printing------------------");
+		for (var i:dr){
+			System.out.println(i.toString());
+		}
+		System.out.println("---------------document records printing finished---------------");
 	}
 }
 	
