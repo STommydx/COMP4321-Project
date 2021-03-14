@@ -1,5 +1,7 @@
 # COMP 4321 Project
 
+[![Java CI with Gradle](https://github.com/STommydx/COMP4321-Project-Phase1/actions/workflows/gradle.yml/badge.svg)](https://github.com/STommydx/COMP4321-Project-Phase1/actions/workflows/gradle.yml)
+
 This is the working repository for the COMP 4321 project. The project is a search engine based on RocksDB.
 
 ## How do I get set up?
