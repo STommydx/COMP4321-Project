@@ -1,8 +1,13 @@
 package space.stdx.rockssandbox;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.jsoup.Jsoup;
@@ -13,6 +18,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
 import org.jsoup.HttpStatusException;
+import org.rocksdb.RocksDBException;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.print.Doc;
@@ -46,7 +52,8 @@ public class Crawler {
 	private int max_crawl_depth = 100;  // feel free to change the depth limit of the spider.
 	private int counter = 0; //\ to count the number of retrieved pages
 	static List<DocumentRecord> dr = new ArrayList<>();
-
+	private static final String DB_NAME = "pagesdb";
+	private static final String PHASE1_OUTPUT = "phase1.txt";
 	static final int MAX_NUMBER_PAGES = 30; // max page
 	
 	Crawler(String _url) {
@@ -92,16 +99,6 @@ public class Crawler {
 		} catch (HttpStatusException e) {
 			throw e;
 		}
-
-		/* Get the metadata from the result */
-//		String lastModified = res.header("last-modified");
-//		int size = res.bodyAsBytes().length;
-//		String htmlLang = res.parse().select("html").first().attr("lang");
-//		String bodyLang = res.parse().select("body").first().attr("lang");
-//		String lang = htmlLang + bodyLang;
-//		System.out.printf("Last Modified: %s\n", lastModified);
-//		System.out.printf("Size: %d Bytes\n", size);
-//		System.out.printf("Language: %s\n", lang);
 		return res;
 	}
 	
@@ -137,12 +134,12 @@ public class Crawler {
 //				System.out.printf("linkString: %s\n", linkString);
 				continue;
 			}
+//			System.out.printf("no linkString: %s\n", linkString);
             result.add(linkString);
         }
         return result;
 	}
-	
-	
+
 	/** Use a queue to manage crawl tasks.
 	 */
 	public void crawlLoop() {
@@ -166,23 +163,38 @@ public class Crawler {
 				String htmlLang = doc.select("html").first().attr("lang");
 				String bodyLang = doc.select("body").first().attr("lang");
 				String lang = htmlLang + bodyLang;
-				if (!lang.toLowerCase().contains("en"))
+				if (!lang.toLowerCase().contains("en")) {
+					System.out.printf("\n skipped link= %s\n", focus.url);
 					continue;
+				}
 				// Check lang end
 				
-				Vector<String> words = this.extractWords(doc);		
-				System.out.println("\nWords:");
-				for(String word: words)
-					System.out.print(word + ", ");
+				Vector<String> words = this.extractWords(doc).parallelStream().filter((item)->{
+					/*
+					 * "check if the code range is outside 0-9, A-Z, a-z is enough
+					 */
+					boolean flag = true; // flag if the word is taken
+					for (int i=0; i<item.length(); ++i) {
+						char chara = item.charAt(i);
+						if ((chara<'0' || chara>'9') && (chara<'A' || chara>'Z') && (chara<'a' || chara>'z'))
+							flag = false;
+					}
+					return flag;
+				}).filter(this::stopWordFilter).collect(Collectors.toCollection(Vector::new));
+//				System.out.println("\nWords:");
+//				for(String word: words)
+//					System.out.print(word + ", ");
 		
 				Vector<String> links = this.extractLinks(doc);
-//				System.out.printf("\n\nLinks:");
+//				System.out.printf("\n\nLinks");
 				for(int i=0;i<links.size();++i) {
 					String link = links.get(i);
 					link = urlPreprocess(focus.url, link);
-					links.set(i, link);
-//					System.out.println("link: "+link);
-					this.todos.add(new Link(link, focus.level + 1)); // add links
+					if (link.contains("cse.ust.hk/")) {
+						links.set(i, link);
+//						System.out.println("Link: " + link);
+						this.todos.add(new Link(link, focus.level + 1)); // add links
+					}
 				}
 
 				// retrieving data
@@ -197,13 +209,12 @@ public class Crawler {
 				for (String item : words)
 					freqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
 
-
-
 				// Calling document record to serialise the retrieved data
 				DocumentRecord documentRecord = new DocumentRecord(new URL(focus.url));
 				documentRecord.setTitle(res.parse().title());
 				documentRecord.setLastModificationDate(new Date(lastModified));
 				documentRecord.setFreqTable(freqTable);
+				documentRecord.setPageSize(size);
 
 				ArrayList<URL> linksList = links.stream().map(a->{
 						URL url;
@@ -219,7 +230,6 @@ public class Crawler {
 
 				dr.add(documentRecord);
 
-
 			} catch (HttpStatusException e) {
 	            // e.printStackTrace ();
 				System.out.printf("\nLink Error: %s\n", focus.url);
@@ -228,7 +238,9 @@ public class Crawler {
 			} catch (IOException e) {
 	    		e.printStackTrace();
 	    	}  catch (RevisitException e) {
-	    	}
+	    	} catch (Exception e){
+				System.out.printf("\nUnhandled error: %s\n", e.getMessage());
+			}
 		}
 		
 	}
@@ -267,7 +279,21 @@ public class Crawler {
 		} else if (linkString.charAt(0) == '#'){
 			return false;
 		}
+		// cannot drop non cse site here
+//		else if (!linkString.contains("cse.ust.hk/")){
+//			return false;
+//		}
 
+		return true;
+	}
+
+	/**
+	 *
+	 * @param word
+	 * @return
+	 */
+	private boolean stopWordFilter(String word){
+		//Todo
 		return true;
 	}
 	
@@ -277,11 +303,27 @@ public class Crawler {
 		crawler.crawlLoop();
 		System.out.println("\nSuccessfully Returned");
 
-		System.out.println("\n-------------document records printing------------------");
-		for (DocumentRecord i : dr){
-			System.out.println(i.toString());
+		// put in database
+		try{
+			RocksStringMap<DocumentRecord> db = new RocksStringMap<>(DB_NAME);
+			for (DocumentRecord documentRecord : dr){
+				db.put(documentRecord.getUrl().toString(), documentRecord);
+			}
+
+			// write out results to a files
+			File file = new File(PHASE1_OUTPUT);
+			PrintWriter writer = new PrintWriter(file);
+			System.out.println("\n-------------document records printing------------------");
+			for (RocksStringMap<DocumentRecord>.Iterator it = db.iterator(); it.isValid(); it.next()) {
+				writer.println("----------------------");
+				writer.println(it.value());
+			}
+			writer.close();
+			System.out.println("---------------document records printing finished---------------");
+
+		}catch (RocksDBException | IOException | ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		System.out.println("---------------document records printing finished---------------");
 	}
 }
 	
