@@ -1,4 +1,4 @@
-
+package space.stdx.rockssandbox;
 
 import java.io.*;
 import java.io.BufferedReader;
@@ -16,7 +16,7 @@ public class StopStem {
     public StopStem(String str) {
         super();
         porter = new Porter();
-        stopWords = new java.util.HashSet<String>();// CHANGE THIS PART TO FILE CONTENT //stopWords.add("is");//stopWords.add("am");//stopWords.add("are");//stopWords.add("was");//stopWords.add("were");
+        stopWords = new java.util.HashSet<String>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(str));
             String line;
@@ -43,7 +43,8 @@ public class StopStem {
                 input = in.readLine();
                 if (input.length() > 0) {
                     if (stopStem.isStopWord(input)) System.out.println("It should be stopped");
-                    elseSystem.out.println("The stem of it is \"" + stopStem.stem(input) + "\"");
+                    else
+                        System.out.println("The stem of it is \"" + stopStem.stem(input) + "\"");
                 }
             } while (input.length() > 0);
         } catch (IOException ioe) {
