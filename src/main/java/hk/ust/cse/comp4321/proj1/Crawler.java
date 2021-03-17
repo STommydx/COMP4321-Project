@@ -5,8 +5,6 @@ import org.jsoup.Connection.Response;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.rocksdb.RocksDBException;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -92,48 +90,6 @@ public class Crawler {
     }
 
     /**
-     * Extract words in the web page content.
-     * note: use StringTokenizer to tokenize the result
-     *
-     * @param {Document} doc
-     * @return {Vector<String>} a list of words in the web page body
-     */
-    public Vector<String> extractWords(Document doc) {
-        Vector<String> result = new Vector<>();
-        // ADD YOUR CODES HERE
-        String contents = doc.body().text();
-        StringTokenizer st = new StringTokenizer(contents);
-        while (st.hasMoreTokens()) {
-            result.add(st.nextToken());
-        }
-        return result;
-    }
-
-    /**
-     * Extract useful external urls on the web page.
-     * note: filter out images, emails, etc.
-     *
-     * @param {Document} doc
-     * @return {Vector<String>} a list of external links on the web page
-     */
-    public Vector<String> extractLinks(Document doc) {
-        Vector<String> result = new Vector<>();
-        // ADD YOUR CODES HERE
-        Elements links = doc.select("a[href]");
-        for (Element link : links) {
-            String linkString = link.attr("href");
-            // filter out false link
-            if (!filterUrl(linkString)) {
-//				System.out.printf("linkString: %s\n", linkString);
-                continue;
-            }
-//			System.out.printf("no linkString: %s\n", linkString);
-            result.add(linkString);
-        }
-        return result;
-    }
-
-    /**
      * Use a queue to manage crawl tasks.
      */
     public void crawlLoop() {
@@ -164,7 +120,7 @@ public class Crawler {
                 }
                 // Check lang end
 
-                Vector<String> words = this.extractWords(doc).parallelStream().filter((item) -> {
+                Vector<String> words = CrawlUtils.extractWords(doc).parallelStream().filter((item) -> {
                     /*
                      * "check if the code range is outside 0-9, A-Z, a-z is enough
                      */
@@ -182,11 +138,11 @@ public class Crawler {
 //				for(String word: words)
 //					System.out.print(word + ", ");
 
-                Vector<String> links = this.extractLinks(doc);
+                Vector<String> links = CrawlUtils.extractLinks(doc);
 //				System.out.printf("\n\nLinks");
                 for (int i = 0; i < links.size(); ++i) {
                     String link = links.get(i);
-                    link = urlPreprocess(focus.url, link);
+                    link = CrawlUtils.urlPreprocess(focus.url, link);
                     if (link.contains("cse.ust.hk/")) {
                         links.set(i, link);
 //						System.out.println("Link: " + link);
@@ -240,50 +196,6 @@ public class Crawler {
             }
         }
 
-    }
-
-    /**
-     * To process relative url to absolute url.
-     * If it is absolute path, i.e., contains 'http' keyword, returns url.
-     * currentUrl and url shall not be empty or null
-     *
-     * @param currentUrl the url of the page it is processing at
-     * @param url        the url retrieved in the current url
-     * @return processed URL
-     */
-    private static String urlPreprocess(String currentUrl, String url) {
-        if (url.contains("http"))
-            return url;
-        else {
-            if (currentUrl.endsWith("/") && url.startsWith("/"))
-                currentUrl = currentUrl.substring(0, currentUrl.length() - 1);
-            return currentUrl + url;
-        }
-    }
-
-    /**
-     * To filter out unwanted junk links
-     * return false if the link is unwanted
-     *
-     * @param linkString the link to be processed
-     * @return if the link is wanted
-     */
-    private boolean filterUrl(String linkString) {
-        if (linkString.trim().isEmpty()) {
-            return false;
-        } else if (linkString.contains("mailto:")) {
-            return false;
-        } else if (linkString.contains("javascript")) {
-            return false;
-        } else if (linkString.charAt(0) == '#') {
-            return false;
-        }
-        // cannot drop non cse site here
-//		else if (!linkString.contains("cse.ust.hk/")){
-//			return false;
-//		}
-
-        return true;
     }
 
     /**
