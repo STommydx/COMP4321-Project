@@ -53,7 +53,7 @@ public class Main {
         @CommandLine.Option(names = {"-p", "--print"}, description = "Printing database forward index to file")
         boolean shouldPrintRecords = false;
         @CommandLine.Option(names = {"-o", "--output"}, description = "The file to print for printing database records")
-        File outputFile = new File("phase1.txt");
+        File outputFile = new File("spider_result.txt");
     }
 
     public static void main(String[] args) {
