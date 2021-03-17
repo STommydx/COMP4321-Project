@@ -54,11 +54,20 @@ public class Main {
         boolean shouldPrintRecords = false;
         @CommandLine.Option(names = {"-o", "--output"}, description = "The file to print for printing database records")
         File outputFile = new File("spider_result.txt");
+
+        @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Display this help message")
+        boolean usageHelpRequested;
     }
 
     public static void main(String[] args) {
         CommandOptions commandOptions = new CommandOptions();
-        new CommandLine(commandOptions).parseArgs(args);
+        CommandLine commandLine = new CommandLine(commandOptions);
+        commandLine.parseArgs(args);
+
+        if (commandLine.isUsageHelpRequested()) {
+            commandLine.usage(System.out);
+            return;
+        }
 
         if (commandOptions.shouldCrawl) {
             crawl(commandOptions.crawlUrl, commandOptions.forwardDb);
