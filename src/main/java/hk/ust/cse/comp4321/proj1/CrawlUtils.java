@@ -97,4 +97,26 @@ public class CrawlUtils {
 
         return true;
     }
+
+    public static boolean isAlphaNumeric(String s) {
+        return s != null && s.matches("^[a-zA-Z0-9]+$");
+    }
+
+    /**
+     * @param word
+     * @return
+     */
+    public static boolean stopwordFilter(String word) {
+        // TODO: return false if word is in stopword list
+        return true;
+    }
+
+    /**
+     * @param word
+     * @return
+     */
+    public static String stemFilter(String word) {
+        // TODO: return the stemmed word
+        return word;
+    }
 }

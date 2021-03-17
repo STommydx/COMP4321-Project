@@ -118,20 +118,11 @@ public class Crawler {
                 }
                 // Check lang end
 
-                Vector<String> words = CrawlUtils.extractWords(doc).parallelStream().filter((item) -> {
-                    /*
-                     * "check if the code range is outside 0-9, A-Z, a-z is enough
-                     */
-                    boolean flag = true; // flag if the word is taken
-                    for (int i = 0; i < item.length(); ++i) {
-                        char chara = item.charAt(i);
-                        if ((chara < '0' || chara > '9') && (chara < 'A' || chara > 'Z') && (chara < 'a' || chara > 'z')) {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    return flag;
-                }).filter(this::stopWordFilter).collect(Collectors.toCollection(Vector::new));
+                Vector<String> words = CrawlUtils.extractWords(doc).parallelStream()
+                        .filter(CrawlUtils::isAlphaNumeric)
+                        .filter(CrawlUtils::stopwordFilter)
+                        .map(CrawlUtils::stemFilter)
+                        .collect(Collectors.toCollection(Vector::new));
 //				System.out.println("\nWords:");
 //				for(String word: words)
 //					System.out.print(word + ", ");
@@ -196,14 +187,6 @@ public class Crawler {
 
     }
 
-    /**
-     * @param word
-     * @return
-     */
-    private boolean stopWordFilter(String word) {
-        //Todo
-        return true;
-    }
 
     public List<DocumentRecord> getDocumentRecords() {
         return documentRecords;
