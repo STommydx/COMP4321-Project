@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'space.stdx.rockssandbox.RocksSandbox'
+mainClassName = 'hk.ust.cse.comp4321.proj1.RocksSandbox'
 
 group 'space.stdx'
 version '1.0'
