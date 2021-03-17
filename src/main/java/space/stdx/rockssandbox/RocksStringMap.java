@@ -5,7 +5,8 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -18,23 +19,29 @@ public class RocksStringMap<V extends Serializable> {
 
     public class Iterator {
         private final RocksIterator it;
+
         public Iterator() {
             it = db.newIterator();
             it.seekToFirst();
         }
+
         public void next() {
             it.next();
         }
+
         public boolean isValid() {
             return it.isValid();
         }
+
         public String key() {
             return new String(it.key());
         }
+
         public V value() throws IOException, ClassNotFoundException {
             //noinspection unchecked
             return (V) SerializationUtils.deserialize(it.value());
         }
+
         public void seekToFirst() {
             it.seekToFirst();
         }
