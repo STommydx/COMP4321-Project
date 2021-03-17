@@ -5,6 +5,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -55,6 +56,10 @@ public class RocksStringMap<V extends Serializable> {
         Options options = new Options();
         options.setCreateIfMissing(true);
         Path path = Paths.get(DB_BASE_PATH, dbName);
+        File dbFolder = path.toFile();
+        if (!dbFolder.exists() && !dbFolder.mkdirs()) {
+            System.err.println("Error: Fail to create database folder: " + path.toString());
+        }
         db = RocksDB.open(path.toString());
     }
 
