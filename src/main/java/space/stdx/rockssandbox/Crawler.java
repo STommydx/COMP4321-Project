@@ -31,8 +31,8 @@ class Link {
     }
 }
 
-@SuppressWarnings("serial")
-/** This is customized exception for those pages that have been visited before.
+/**
+ * This is customized exception for those pages that have been visited before.
  */
 class RevisitException
         extends RuntimeException {
@@ -42,19 +42,20 @@ class RevisitException
 }
 
 public class Crawler {
-    private HashSet<String> urls;     // the set of urls that have been visited before
+    private final HashSet<String> urls;     // the set of urls that have been visited before
     public Vector<Link> todos; // the queue of URLs to be crawled
-    private int max_crawl_depth = 100;  // feel free to change the depth limit of the spider.
     private int counter = 0; // to count the number of retrieved pages
     static List<DocumentRecord> dr = new ArrayList<>();
+
     private static final String DB_NAME = "pagesdb";
     private static final String PHASE1_OUTPUT = "phase1.txt";
     static final int MAX_NUMBER_PAGES = 30; // max page
+    private static final int MAX_CRAWL_DEPTH = 100;
 
     Crawler(String _url) {
-        this.todos = new Vector<Link>();
+        this.todos = new Vector<>();
         this.todos.add(new Link(_url, 1));
-        this.urls = new HashSet<String>();
+        this.urls = new HashSet<>();
     }
 
     /**
@@ -69,29 +70,23 @@ public class Crawler {
             throw new RevisitException(); // if the page has been visited, break the function
         }
 
-
-        Connection conn = null;
-
-        conn = Jsoup.connect(url).followRedirects(false);
         // the default body size is 2Mb, to attain unlimited page, use the following.
         // Connection conn = Jsoup.connect(this.url).maxBodySize(0).followRedirects(false);
-        Response res;
-        try {
-            /* establish the connection and retrieve the response */
-            res = conn.execute();
-            /* if the link redirects to other place... */
-            if (res.hasHeader("location")) {
-                String actual_url = res.header("location");
-                if (this.urls.contains(actual_url)) {
-                    throw new RevisitException();
-                } else {
-                    this.urls.add(actual_url);
-                }
+        Connection conn = Jsoup.connect(url).followRedirects(false);
+
+        /* establish the connection and retrieve the response */
+        Response res = conn.execute();
+
+        /* if the link redirects to other place... */
+        if (res.hasHeader("location")) {
+            String actual_url = res.header("location");
+            if (this.urls.contains(actual_url)) {
+                throw new RevisitException();
             } else {
-                this.urls.add(url);
+                this.urls.add(actual_url);
             }
-        } catch (HttpStatusException e) {
-            throw e;
+        } else {
+            this.urls.add(url);
         }
         return res;
     }
@@ -104,7 +99,7 @@ public class Crawler {
      * @return {Vector<String>} a list of words in the web page body
      */
     public Vector<String> extractWords(Document doc) {
-        Vector<String> result = new Vector<String>();
+        Vector<String> result = new Vector<>();
         // ADD YOUR CODES HERE
         String contents = doc.body().text();
         StringTokenizer st = new StringTokenizer(contents);
@@ -122,7 +117,7 @@ public class Crawler {
      * @return {Vector<String>} a list of external links on the web page
      */
     public Vector<String> extractLinks(Document doc) {
-        Vector<String> result = new Vector<String>();
+        Vector<String> result = new Vector<>();
         // ADD YOUR CODES HERE
         Elements links = doc.select("a[href]");
         for (Element link : links) {
@@ -144,7 +139,8 @@ public class Crawler {
     public void crawlLoop() {
         while (!this.todos.isEmpty()) {
             Link focus = this.todos.remove(0);
-            if (focus.level > this.max_crawl_depth) break; // stop criteria
+            // feel free to change the depth limit of the spider.
+            if (focus.level > MAX_CRAWL_DEPTH) break; // stop criteria
             if (this.urls.contains(focus.url)) continue;   // ignore pages that has been visited
             if (this.counter >= MAX_NUMBER_PAGES) {  // stop when number of pages exceed the constant
                 break;
@@ -175,8 +171,10 @@ public class Crawler {
                     boolean flag = true; // flag if the word is taken
                     for (int i = 0; i < item.length(); ++i) {
                         char chara = item.charAt(i);
-                        if ((chara < '0' || chara > '9') && (chara < 'A' || chara > 'Z') && (chara < 'a' || chara > 'z'))
+                        if ((chara < '0' || chara > '9') && (chara < 'A' || chara > 'Z') && (chara < 'a' || chara > 'z')) {
                             flag = false;
+                            break;
+                        }
                     }
                     return flag;
                 }).filter(this::stopWordFilter).collect(Collectors.toCollection(Vector::new));
@@ -236,7 +234,7 @@ public class Crawler {
                 System.out.printf("\nSSL Error: %s\n", focus.url);
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (RevisitException e) {
+            } catch (RevisitException ignored) {
             } catch (Exception e) {
                 System.out.printf("\nUnhandled error: %s\n", e.getMessage());
             }
@@ -326,4 +324,4 @@ public class Crawler {
         }
     }
 }
-	
+
