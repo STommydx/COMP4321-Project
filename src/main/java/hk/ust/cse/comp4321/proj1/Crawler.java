@@ -43,10 +43,8 @@ public class Crawler {
     private final HashSet<String> urls;     // the set of urls that have been visited before
     public Vector<Link> todos; // the queue of URLs to be crawled
     private int counter = 0; // to count the number of retrieved pages
-    static List<DocumentRecord> dr = new ArrayList<>();
+    private final List<DocumentRecord> documentRecords = new ArrayList<>();
 
-    private static final String DB_NAME = "pagesdb";
-    private static final String PHASE1_OUTPUT = "phase1.txt";
     static final int MAX_NUMBER_PAGES = 30; // max page
     private static final int MAX_CRAWL_DEPTH = 100;
 
@@ -181,7 +179,7 @@ public class Crawler {
                 }).collect(Collectors.toCollection(ArrayList::new));
                 documentRecord.setChildLinks(linksList);
 
-                dr.add(documentRecord);
+                documentRecords.add(documentRecord);
 
             } catch (HttpStatusException e) {
                 // e.printStackTrace ();
@@ -207,33 +205,9 @@ public class Crawler {
         return true;
     }
 
-    public static void main(String[] args) {
-        String url = "https://www.cse.ust.hk/";
-        Crawler crawler = new Crawler(url);
-        crawler.crawlLoop();
-        System.out.println("\nSuccessfully Returned");
-
-        // put in database
-        try {
-            RocksStringMap<DocumentRecord> db = new RocksStringMap<>(DB_NAME);
-            for (DocumentRecord documentRecord : dr) {
-                db.put(documentRecord.getUrl().toString(), documentRecord);
-            }
-
-            // write out results to a files
-            File file = new File(PHASE1_OUTPUT);
-            PrintWriter writer = new PrintWriter(file);
-            System.out.println("\n-------------document records printing------------------");
-            for (RocksStringMap<DocumentRecord>.Iterator it = db.iterator(); it.isValid(); it.next()) {
-                writer.println("----------------------");
-                writer.println(it.value());
-            }
-            writer.close();
-            System.out.println("---------------document records printing finished---------------");
-
-        } catch (RocksDBException | IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+    public List<DocumentRecord> getDocumentRecords() {
+        return documentRecords;
     }
+
 }
 
