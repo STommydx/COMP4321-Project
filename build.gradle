@@ -1,11 +1,12 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'java'
     id 'application'
 }
 
-mainClassName = 'space.stdx.rockssandbox.RocksSandbox'
+mainClassName = 'hk.ust.cse.comp4321.proj1.Main'
 
-group 'space.stdx'
+group 'hk.ust.cse.comp4321'
 version '1.0'
 
 repositories {
@@ -15,4 +16,10 @@ repositories {
 dependencies {
     implementation 'org.rocksdb:rocksdbjni:6.15.2'
     implementation 'org.jsoup:jsoup:1.13.1'
+    implementation 'info.picocli:picocli:4.6.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.6.1'
+}
+
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
