@@ -8,9 +8,7 @@
 
 */ 
 
-package space.stdx.rockssandbox;
-
-import java.io.*;
+package hk.ust.cse.comp4321.proj1;
 
 class NewString {
   public String str;
