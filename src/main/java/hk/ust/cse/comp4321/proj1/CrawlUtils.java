@@ -107,8 +107,8 @@ public class CrawlUtils {
      * @return
      */
     public static boolean stopwordFilter(String word) {
-        // TODO: return false if word is in stopword list
-        return true;
+        StopStem stopStem = new StopStem("stopwords-en.txt");
+        return !stopStem.isStopWord(word);
     }
 
     /**
@@ -116,7 +116,7 @@ public class CrawlUtils {
      * @return
      */
     public static String stemFilter(String word) {
-        // TODO: return the stemmed word
-        return word;
+        Porter porter = new Porter();
+        return porter.stripAffixes(word);
     }
 }
