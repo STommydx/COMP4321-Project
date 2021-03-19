@@ -30,7 +30,7 @@ public class StopStem {
     }
 
     public String stem(String str) {
-        return porter.stripAffixes(str);
+            return porter.stripAffixes(str);
     }
 
     public static void main(String[] arg) {
