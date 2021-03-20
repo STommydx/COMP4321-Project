@@ -89,11 +89,6 @@ public class CrawlUtils {
         } else if (linkString.charAt(0) == '#') {
             return false;
         }
-        // cannot drop non cse site here
-//		else if (!linkString.contains("cse.ust.hk/")){
-//			return false;
-//		}
-
         return true;
     }
 

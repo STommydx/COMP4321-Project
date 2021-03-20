@@ -25,7 +25,6 @@ public class Main {
             RocksStringMap<Integer> urlDatabase = new RocksStringMap<>(lookupDb);
 
             for (DocumentRecord documentRecord : documentRecordList) {
-//                db.put(documentRecord.getUrl().toString(), documentRecord);
                 Integer urlKey = urlDatabase.get(documentRecord.getUrl().toString());
                 Integer currentKey;
 
