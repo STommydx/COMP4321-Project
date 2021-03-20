@@ -125,14 +125,12 @@ public class Crawler {
                         .collect(Collectors.toCollection(Vector::new));
 
                 Vector<String> links = CrawlUtils.extractLinks(doc);
-//				System.out.printf("\n\nLinks");
                 for (int i = 0; i < links.size(); ++i) {
                     String link = links.get(i);
                     link = CrawlUtils.urlPreprocess(focus.url, link);
                     try {
                         URL url = new URL(link);
-                        if (url.getHost().contains("cse.ust.hk")) {
-//                            System.out.printf("\nset links: %s\n", link);
+                        if (url.getHost().matches("^.+\\.cse\\.ust\\.hk$")) {
                             links.set(i, link);
                             this.todos.add(new Link(link, focus.level + 1)); // add links
                         }
