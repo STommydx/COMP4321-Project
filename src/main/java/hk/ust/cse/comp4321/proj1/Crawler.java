@@ -8,7 +8,6 @@ import org.jsoup.nodes.Document;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -125,14 +124,15 @@ public class Crawler {
                         .collect(Collectors.toCollection(Vector::new));
 
                 Vector<String> extractedLinks = CrawlUtils.extractLinks(doc);
-                ArrayList<URL> linksList = new ArrayList<>();
+                Set<URL> linkSet = new HashSet<>();
                 for (String extractedLink : extractedLinks) {
                     URL link = CrawlUtils.urlPreprocess(focus.url, extractedLink);
                     if (link.getHost().equals(rootURL.getHost())) {
                         this.todos.add(new Link(link, focus.level + 1)); // add links
-                        linksList.add(link);
+                        linkSet.add(link);
                     }
                 }
+                ArrayList<URL> linksList = new ArrayList<>(linkSet);
 
                 // retrieving data
                 String lastModified = res.header("Last-Modified");
