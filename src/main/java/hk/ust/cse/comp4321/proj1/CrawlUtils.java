@@ -4,6 +4,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -48,7 +52,8 @@ public class CrawlUtils {
             if (!filterUrl(linkString)) {
                 continue;
             }
-            result.add(linkString);
+            // remove URI fragment (#fragment)
+            result.add(removeURIFragment(linkString));
         }
         return result;
     }
@@ -62,14 +67,8 @@ public class CrawlUtils {
      * @param url        the url retrieved in the current url
      * @return processed URL
      */
-    public static String urlPreprocess(String currentUrl, String url) {
-        if (url.contains("http"))
-            return url;
-        else {
-            if (currentUrl.endsWith("/") && url.startsWith("/"))
-                currentUrl = currentUrl.substring(0, currentUrl.length() - 1);
-            return currentUrl + url;
-        }
+    public static URL urlPreprocess(URL currentUrl, String url) throws MalformedURLException {
+        return new URL(currentUrl, url);
     }
 
     /**
@@ -80,21 +79,25 @@ public class CrawlUtils {
      * @return if the link is wanted
      */
     public static boolean filterUrl(String linkString) {
-        if (linkString.trim().isEmpty()) {
-            return false;
-        } else if (linkString.contains("mailto:")) {
-            return false;
-        } else if (linkString.contains("javascript")) {
-            return false;
-        } else if (linkString.charAt(0) == '#') {
+        try {
+            URI uri = new URI(linkString);
+            if (uri.isOpaque()) return false; // filter out mailto: or javascript:
+            return !uri.isAbsolute() || (uri.getScheme().equals("http") || uri.getScheme().equals("https"));
+        } catch (URISyntaxException e) {
             return false;
         }
-        // cannot drop non cse site here
-//		else if (!linkString.contains("cse.ust.hk/")){
-//			return false;
-//		}
+    }
 
-        return true;
+    public static String removeURIFragment(String linkString) {
+        try {
+            URI uri = new URI(linkString);
+            URI uriWithoutFragment = new URI(uri.getScheme(), uri.getRawSchemeSpecificPart(), null);
+            return uriWithoutFragment.toString();
+        } catch (URISyntaxException e) {
+            // unexpected error
+            e.printStackTrace();
+            return linkString;
+        }
     }
 
     public static boolean isAlphaNumeric(String s) {
