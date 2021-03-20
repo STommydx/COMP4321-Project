@@ -9,6 +9,8 @@ import java.util.Vector;
 
 public class CrawlUtils {
 
+    private static final StopStem stopStem = new StopStem("stopwords-en.txt");
+
     private CrawlUtils() {
     }
 
@@ -104,7 +106,6 @@ public class CrawlUtils {
      * @return
      */
     public static boolean stopwordFilter(String word) {
-        StopStem stopStem = new StopStem("stopwords-en.txt");
         return !stopStem.isStopWord(word);
     }
 
@@ -113,7 +114,6 @@ public class CrawlUtils {
      * @return
      */
     public static String stemFilter(String word) {
-        Porter porter = new Porter();
-        return porter.stripAffixes(word);
+        return stopStem.stem(word);
     }
 }
