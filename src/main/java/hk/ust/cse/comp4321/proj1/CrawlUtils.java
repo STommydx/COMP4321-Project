@@ -39,16 +39,13 @@ public class CrawlUtils {
      */
     public static Vector<String> extractLinks(Document doc) {
         Vector<String> result = new Vector<>();
-        // ADD YOUR CODES HERE
         Elements links = doc.select("a[href]");
         for (Element link : links) {
             String linkString = link.attr("href");
             // filter out false link
             if (!filterUrl(linkString)) {
-//				System.out.printf("linkString: %s\n", linkString);
                 continue;
             }
-//			System.out.printf("no linkString: %s\n", linkString);
             result.add(linkString);
         }
         return result;

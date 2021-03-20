@@ -44,6 +44,8 @@ public abstract class RocksAbstractMap<K, V extends Serializable> {
         public void seekToFirst() {
             it.seekToFirst();
         }
+
+        public void seekToLast(){ it.seekToLast(); }
     }
 
     private final RocksDB db;
