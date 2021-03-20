@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
  * The data structure for the crawling queue.
  */
 class Link {
-    String url;
+    URL url;
     int level;
 
-    Link(String url, int level) {
+    Link(URL url, int level) {
         this.url = url;
         this.level = level;
     }
@@ -37,7 +37,9 @@ class RevisitException
 }
 
 public class Crawler {
-    private final HashSet<String> urls;     // the set of urls that have been visited before
+    private final URL rootURL;
+
+    private final HashSet<URL> urls;     // the set of urls that have been visited before
     public Vector<Link> todos; // the queue of URLs to be crawled
     private int counter = 0; // to count the number of retrieved pages
     private final List<DocumentRecord> documentRecords = new ArrayList<>();
@@ -45,7 +47,8 @@ public class Crawler {
     static final int MAX_NUMBER_PAGES = 30; // max page
     private static final int MAX_CRAWL_DEPTH = 100;
 
-    Crawler(String _url) {
+    Crawler(URL _url) {
+        this.rootURL = _url;
         this.todos = new Vector<>();
         this.todos.add(new Link(_url, 1));
         this.urls = new HashSet<>();
@@ -58,21 +61,21 @@ public class Crawler {
      * @throws HttpStatusException for non-existing pages
      * @throws IOException
      */
-    public Response getResponse(String url) throws HttpStatusException, IOException {
+    public Response getResponse(URL url) throws HttpStatusException, IOException {
         if (this.urls.contains(url)) {
             throw new RevisitException(); // if the page has been visited, break the function
         }
 
         // the default body size is 2Mb, to attain unlimited page, use the following.
         // Connection conn = Jsoup.connect(this.url).maxBodySize(0).followRedirects(false);
-        Connection conn = Jsoup.connect(url).followRedirects(false);
+        Connection conn = Jsoup.connect(url.toString()).followRedirects(false);
 
         /* establish the connection and retrieve the response */
         Response res = conn.execute();
 
         /* if the link redirects to other place... */
         if (res.hasHeader("location")) {
-            String actual_url = res.header("location");
+            URL actual_url = new URL(url, res.header("location"));
             if (this.urls.contains(actual_url)) {
                 throw new RevisitException();
             } else {
@@ -121,19 +124,13 @@ public class Crawler {
                         .map(CrawlUtils::stemFilter)
                         .collect(Collectors.toCollection(Vector::new));
 
-                Vector<String> links = CrawlUtils.extractLinks(doc);
-                for (int i = 0; i < links.size(); ++i) {
-                    String link = links.get(i);
-                    link = CrawlUtils.urlPreprocess(focus.url, link);
-                    try {
-                        URL url = new URL(link);
-                        if (url.getHost().matches("^.+\\.cse\\.ust\\.hk$")) {
-                            links.set(i, link);
-                            this.todos.add(new Link(link, focus.level + 1)); // add links
-                        }
-                    } catch (MalformedURLException e){
-                        // not supposed to encounter exception here
-                        System.out.println("Unexpected malformed exception");
+                Vector<String> extractedLinks = CrawlUtils.extractLinks(doc);
+                ArrayList<URL> linksList = new ArrayList<>();
+                for (String extractedLink : extractedLinks) {
+                    URL link = CrawlUtils.urlPreprocess(focus.url, extractedLink);
+                    if (link.getHost().equals(rootURL.getHost())) {
+                        this.todos.add(new Link(link, focus.level + 1)); // add links
+                        linksList.add(link);
                     }
                 }
 
@@ -150,22 +147,11 @@ public class Crawler {
                     freqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
 
                 // Calling document record to serialise the retrieved data
-                DocumentRecord documentRecord = new DocumentRecord(new URL(focus.url));
+                DocumentRecord documentRecord = new DocumentRecord(focus.url);
                 documentRecord.setTitle(res.parse().title());
                 documentRecord.setLastModificationDate(new Date(lastModified));
                 documentRecord.setFreqTable(freqTable);
                 documentRecord.setPageSize(size);
-
-                ArrayList<URL> linksList = links.stream().map(a -> {
-                    URL url;
-                    try {
-                        url = new URL(a);
-                    } catch (MalformedURLException e) {
-                        System.out.println("exception: " + a);
-                        return null;
-                    }
-                    return url;
-                }).collect(Collectors.toCollection(ArrayList::new));
                 documentRecord.setChildLinks(linksList);
 
                 documentRecords.add(documentRecord);

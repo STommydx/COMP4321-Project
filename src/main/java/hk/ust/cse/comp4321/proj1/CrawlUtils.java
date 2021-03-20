@@ -4,6 +4,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -62,14 +64,8 @@ public class CrawlUtils {
      * @param url        the url retrieved in the current url
      * @return processed URL
      */
-    public static String urlPreprocess(String currentUrl, String url) {
-        if (url.contains("http"))
-            return url;
-        else {
-            if (currentUrl.endsWith("/") && url.startsWith("/"))
-                currentUrl = currentUrl.substring(0, currentUrl.length() - 1);
-            return currentUrl + url;
-        }
+    public static URL urlPreprocess(URL currentUrl, String url) throws MalformedURLException {
+        return new URL(currentUrl, url);
     }
 
     /**
