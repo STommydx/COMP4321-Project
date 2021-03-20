@@ -81,9 +81,7 @@ public class DocumentRecord implements Serializable {
             builder.append(e.getKey()).append(' ').append(e.getValue()).append(';');
         }
         builder.append('\n');
-        for (URL childLink : childLinks) {
-            builder.append(childLink).append('\n');
-        }
+        childLinks.stream().map(URL::toString).sorted().forEach(childLink -> builder.append(childLink).append('\n'));
         return builder.toString();
     }
 }
