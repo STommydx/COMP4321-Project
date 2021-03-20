@@ -118,7 +118,7 @@ public class Crawler {
                 }
                 // Check lang end
 
-                Vector<String> words = CrawlUtils.extractWords(doc).parallelStream()
+                Vector<String> words = CrawlUtils.extractWords(doc).stream()
                         .filter(CrawlUtils::isAlphaNumeric)
                         .filter(CrawlUtils::stopwordFilter)
                         .map(CrawlUtils::stemFilter)
