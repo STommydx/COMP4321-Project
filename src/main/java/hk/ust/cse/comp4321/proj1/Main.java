@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -84,6 +85,10 @@ public class Main {
         } catch (IOException | ClassNotFoundException | RocksDBException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String query(String queryString) {
+        return String.format("Current Working Directory: %s\nQuerying: %s", Paths.get(".").toAbsolutePath().normalize().toString(), queryString);
     }
 
     public static class CommandOptions {

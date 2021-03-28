@@ -1,16 +1,14 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: stommydx
-  Date: 24/3/2021
-  Time: 12:09 AM
-  To change this template use File | Settings | File Templates.
---%>
+<%@ page import="hk.ust.cse.comp4321.proj1.Main" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
     <title>Title</title>
 </head>
 <body>
-
+<%
+    String queryString = request.getParameter("q");
+    String queryResult = Main.query(queryString);
+    out.print(queryResult);
+%>
 </body>
 </html>
