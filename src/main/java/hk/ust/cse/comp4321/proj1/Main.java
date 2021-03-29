@@ -15,8 +15,8 @@ import java.util.TreeMap;
 
 public class Main {
 
-    public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb) {
-        Crawler crawler = new Crawler(crawlUrl);
+    public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, int crawlPages, int crawlDepth) {
+        Crawler crawler = new Crawler(crawlUrl, crawlPages, crawlDepth);
         System.out.println("Crawler now crawling from root URL " + crawlUrl.toString() + "...");
         crawler.crawlLoop();
 
@@ -102,6 +102,10 @@ public class Main {
         boolean shouldCrawl = false;
         @CommandLine.Option(names = {"-u", "--url"}, description = "The root URL to crawl")
         String crawlUrl = "https://www.cse.ust.hk/";
+        @CommandLine.Option(names = {"-d", "--depth"}, description = "The maximum recursive depth when crawling the pages")
+        int crawlDepth = 5;
+        @CommandLine.Option(names = {"-n", "--num-docs"}, description = "The maximum number of documents that should be crawled")
+        int crawlPages = 30;
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")
         String forwardDb = "ForwardIndex";
         @CommandLine.Option(names = {"-i", "--inverted-index"}, description = "The database name of the inverted index")
@@ -132,7 +136,7 @@ public class Main {
             try {
                 URL crawlURL = new URL(commandOptions.crawlUrl);
                 crawl(crawlURL, commandOptions.forwardDb, commandOptions.invertedDb,
-                        commandOptions.lookupDb);
+                        commandOptions.lookupDb, commandOptions.crawlPages, commandOptions.crawlDepth);
             } catch (MalformedURLException e) {
                 System.out.println("The URL provided (" + commandOptions.crawlUrl + ") is not a valid URL.");
             }
