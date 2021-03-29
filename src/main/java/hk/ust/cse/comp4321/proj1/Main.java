@@ -88,7 +88,13 @@ public class Main {
     }
 
     public static String query(String queryString) {
-        return String.format("Current Working Directory: %s\nQuerying: %s", Paths.get(".").toAbsolutePath().normalize().toString(), queryString);
+        try {
+            RocksStringMap<TreeMap<Integer, Integer>> invertedDatabase = new RocksStringMap<>("InvertedIndex");
+            return invertedDatabase.get(queryString).toString();
+        } catch (RocksDBException | IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "Error!";
     }
 
     public static class CommandOptions {

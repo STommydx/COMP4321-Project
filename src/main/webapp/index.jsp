@@ -7,8 +7,10 @@
 <body>
 <%
     String queryString = request.getParameter("q");
-    String queryResult = Main.query(queryString);
-    out.print(queryResult);
+    if (queryString != null) {
+        String queryResult = Main.query(queryString);
+        out.print(queryResult);
+    }
 %>
 </body>
 </html>
