@@ -26,9 +26,9 @@ public class Main {
 
         System.out.println("Inserting crawled records to RocksDB tables...");
         try {
-            RocksIntegerMap<DocumentRecord> forwardDatabase = new RocksIntegerMap<>(forwardDb);
-            RocksStringMap<TreeMap<Integer, Integer>> invertedDatabase = new RocksStringMap<>(invertedDb);
-            RocksStringMap<Integer> urlDatabase = new RocksStringMap<>(lookupDb);
+            ForwardIndex forwardDatabase = ForwardIndex.getInstance(forwardDb);
+            InvertedIndex invertedDatabase = InvertedIndex.getInstance(invertedDb);
+            DocumentLookupIndex urlDatabase = DocumentLookupIndex.getInstance(lookupDb);
 
             int recordAdded = 0;
             int recordModified = 0;
@@ -75,9 +75,9 @@ public class Main {
 
     public static void printRecords(File file, String forwardDb) {
         try (PrintWriter writer = new PrintWriter(file)) {
-            RocksStringMap<DocumentRecord> db = new RocksStringMap<>(forwardDb);
+            ForwardIndex db = ForwardIndex.getInstance(forwardDb);
             System.out.println("Successfully opened Forward Index table " + forwardDb + ". Reading records...");
-            for (RocksStringMap<DocumentRecord>.Iterator it = db.iterator(); it.isValid(); it.next()) {
+            for (RocksAbstractMap<Integer, DocumentRecord>.Iterator it = db.iterator(); it.isValid(); it.next()) {
                 writer.println("----------------------");
                 writer.println(it.value());
             }
@@ -89,7 +89,7 @@ public class Main {
 
     public static String query(String queryString) {
         try {
-            RocksStringMap<TreeMap<Integer, Integer>> invertedDatabase = new RocksStringMap<>("InvertedIndex");
+            InvertedIndex invertedDatabase = InvertedIndex.getInstance("InvertedIndex");
             return invertedDatabase.get(queryString).toString();
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
