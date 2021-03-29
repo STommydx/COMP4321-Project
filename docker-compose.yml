@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  web:
+    image: comp4321-se
+    build: .
+    restart: always
+    environment:
+      SE_DB_BASE_PATH: /srv/rocksdb
+    ports:
+      - 3000:8080
+    volumes:
+      - rocksdb:/srv/rocksdb
+
+volumes:
+  rocksdb:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/db

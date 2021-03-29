@@ -49,13 +49,16 @@ public abstract class RocksAbstractMap<K, V extends Serializable> {
     }
 
     private final RocksDB db;
-    private static final String DB_BASE_PATH = "db";
+    private static final String ENV_DB_BASE_PATH = "SE_DB_BASE_PATH";
+    private static final String DEFAULT_DB_BASE_PATH = "db";
 
     public RocksAbstractMap(String dbName) throws RocksDBException {
         RocksDB.loadLibrary();
         Options options = new Options();
         options.setCreateIfMissing(true);
-        Path path = Paths.get(DB_BASE_PATH, dbName);
+        String dbBasePath = System.getenv(ENV_DB_BASE_PATH);
+        if (dbBasePath == null) dbBasePath = DEFAULT_DB_BASE_PATH;
+        Path path = Paths.get(dbBasePath, dbName);
         File dbFolder = path.toFile();
         if (!dbFolder.exists() && !dbFolder.mkdirs()) {
             System.err.println("Error: Fail to create database folder: " + path.toString());
