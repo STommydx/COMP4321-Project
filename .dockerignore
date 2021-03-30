@@ -2,3 +2,5 @@
 build/
 db/
 *.pdf
+tomcat/
+.gradle/
