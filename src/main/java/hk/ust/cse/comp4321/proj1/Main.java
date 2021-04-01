@@ -8,14 +8,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Main {
 
-    public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb) {
-        Crawler crawler = new Crawler(crawlUrl);
+    public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, int crawlPages, int crawlDepth) {
+        Crawler crawler = new Crawler(crawlUrl, crawlPages, crawlDepth);
         System.out.println("Crawler now crawling from root URL " + crawlUrl.toString() + "...");
         crawler.crawlLoop();
 
@@ -25,9 +26,9 @@ public class Main {
 
         System.out.println("Inserting crawled records to RocksDB tables...");
         try {
-            RocksIntegerMap<DocumentRecord> forwardDatabase = new RocksIntegerMap<>(forwardDb);
-            RocksStringMap<TreeMap<Integer, Integer>> invertedDatabase = new RocksStringMap<>(invertedDb);
-            RocksStringMap<Integer> urlDatabase = new RocksStringMap<>(lookupDb);
+            ForwardIndex forwardDatabase = ForwardIndex.getInstance(forwardDb);
+            InvertedIndex invertedDatabase = InvertedIndex.getInstance(invertedDb);
+            DocumentLookupIndex urlDatabase = DocumentLookupIndex.getInstance(lookupDb);
 
             int recordAdded = 0;
             int recordModified = 0;
@@ -74,9 +75,9 @@ public class Main {
 
     public static void printRecords(File file, String forwardDb) {
         try (PrintWriter writer = new PrintWriter(file)) {
-            RocksStringMap<DocumentRecord> db = new RocksStringMap<>(forwardDb);
+            ForwardIndex db = ForwardIndex.getInstance(forwardDb);
             System.out.println("Successfully opened Forward Index table " + forwardDb + ". Reading records...");
-            for (RocksStringMap<DocumentRecord>.Iterator it = db.iterator(); it.isValid(); it.next()) {
+            for (RocksAbstractMap<Integer, DocumentRecord>.Iterator it = db.iterator(); it.isValid(); it.next()) {
                 writer.println("----------------------");
                 writer.println(it.value());
             }
@@ -86,11 +87,25 @@ public class Main {
         }
     }
 
+    public static String query(String queryString) {
+        try {
+            InvertedIndex invertedDatabase = InvertedIndex.getInstance("InvertedIndex");
+            return invertedDatabase.get(queryString).toString();
+        } catch (RocksDBException | IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "Error!";
+    }
+
     public static class CommandOptions {
         @CommandLine.Option(names = {"-c", "--crawl"}, description = "Crawl the web to update database document records")
         boolean shouldCrawl = false;
         @CommandLine.Option(names = {"-u", "--url"}, description = "The root URL to crawl")
         String crawlUrl = "https://www.cse.ust.hk/";
+        @CommandLine.Option(names = {"-d", "--depth"}, description = "The maximum recursive depth when crawling the pages")
+        int crawlDepth = 5;
+        @CommandLine.Option(names = {"-n", "--num-docs"}, description = "The maximum number of documents that should be crawled")
+        int crawlPages = 30;
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")
         String forwardDb = "ForwardIndex";
         @CommandLine.Option(names = {"-i", "--inverted-index"}, description = "The database name of the inverted index")
@@ -121,7 +136,7 @@ public class Main {
             try {
                 URL crawlURL = new URL(commandOptions.crawlUrl);
                 crawl(crawlURL, commandOptions.forwardDb, commandOptions.invertedDb,
-                        commandOptions.lookupDb);
+                        commandOptions.lookupDb, commandOptions.crawlPages, commandOptions.crawlDepth);
             } catch (MalformedURLException e) {
                 System.out.println("The URL provided (" + commandOptions.crawlUrl + ") is not a valid URL.");
             }

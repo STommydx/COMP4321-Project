@@ -1,0 +1,6 @@
+.idea/
+build/
+db/
+*.pdf
+tomcat/
+.gradle/

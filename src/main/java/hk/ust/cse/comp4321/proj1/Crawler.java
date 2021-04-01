@@ -43,14 +43,16 @@ public class Crawler {
     private int counter = 0; // to count the number of retrieved pages
     private final List<DocumentRecord> documentRecords = new ArrayList<>();
 
-    static final int MAX_NUMBER_PAGES = 30; // max page
-    private static final int MAX_CRAWL_DEPTH = 100;
+    private final int maxPages; // max page
+    private final int maxDepth;
 
-    Crawler(URL _url) {
-        this.rootURL = _url;
+    Crawler(URL rootURL, int maxPages, int maxDepth) {
+        this.rootURL = rootURL;
         this.todos = new Vector<>();
-        this.todos.add(new Link(_url, 1));
+        this.todos.add(new Link(rootURL, 1));
         this.urls = new HashSet<>();
+        this.maxPages = maxPages;
+        this.maxDepth = maxDepth;
     }
 
     /**
@@ -90,12 +92,12 @@ public class Crawler {
      * Use a queue to manage crawl tasks.
      */
     public void crawlLoop() {
-        while (!this.todos.isEmpty()) {
-            Link focus = this.todos.remove(0);
+        while (!todos.isEmpty()) {
+            Link focus = todos.remove(0);
             // feel free to change the depth limit of the spider.
-            if (focus.level > MAX_CRAWL_DEPTH) break; // stop criteria
-            if (this.urls.contains(focus.url)) continue;   // ignore pages that has been visited
-            if (this.counter >= MAX_NUMBER_PAGES) {  // stop when number of pages exceed the constant
+            if (focus.level > maxDepth) break; // stop criteria
+            if (urls.contains(focus.url)) continue;   // ignore pages that has been visited
+            if (counter >= maxPages) {  // stop when number of pages exceed the constant
                 break;
             } else {
                 counter++;
@@ -128,7 +130,7 @@ public class Crawler {
                 for (String extractedLink : extractedLinks) {
                     URL link = CrawlUtils.urlPreprocess(focus.url, extractedLink);
                     if (link.getHost().equals(rootURL.getHost())) {
-                        this.todos.add(new Link(link, focus.level + 1)); // add links
+                        todos.add(new Link(link, focus.level + 1)); // add links
                         linkSet.add(link);
                     }
                 }

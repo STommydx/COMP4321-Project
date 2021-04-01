@@ -13,7 +13,7 @@ import java.util.Vector;
 
 public class CrawlUtils {
 
-    private static final StopStem stopStem = new StopStem("stopwords-en.txt");
+    private static final StopStem stopStem = new StopStem();
 
     private CrawlUtils() {
     }
