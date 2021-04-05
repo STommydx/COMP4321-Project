@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1;
 
+import hk.ust.cse.comp4321.proj1.vsm.Query;
 import org.rocksdb.RocksDBException;
 import picocli.CommandLine;
 
@@ -8,9 +9,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 
 public class Main {
@@ -39,7 +40,7 @@ public class Main {
 
                 if (urlKey == null) {  // if url not exist in database
                     // get a new key to for this url/documentRecord and update DB
-                    currentKey = forwardDatabase.getNextID();
+                    currentKey = forwardDatabase.getAndIncrementNextID();
                     urlDatabase.put(documentRecord.getUrl().toString(), currentKey);
                     recordAdded++;
                 } else {
@@ -87,14 +88,19 @@ public class Main {
         }
     }
 
-    public static String query(String queryString) {
+    public static void query(String queryString, String forwardDb, String invertedDb) {
+        System.out.println("Now querying: '" + queryString + "'");
+        Query query = Query.parse(queryString);
+        System.out.println("Parsed query: '" + query + "'");
         try {
-            InvertedIndex invertedDatabase = InvertedIndex.getInstance("InvertedIndex");
-            return invertedDatabase.get(queryString).toString();
+            ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
+            InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
+            invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
+            List<Map.Entry<Integer, Double>> result = query.query(invertedIndex);
+            System.out.println("Raw query result: " + result);
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return "Error!";
     }
 
     public static class CommandOptions {
@@ -106,6 +112,12 @@ public class Main {
         int crawlDepth = 5;
         @CommandLine.Option(names = {"-n", "--num-docs"}, description = "The maximum number of documents that should be crawled")
         int crawlPages = 30;
+
+        @CommandLine.Option(names = {"-q", "--query"}, description = "The query term for query")
+        String queryString = null;
+        @CommandLine.Option(names = "--query-interactive", description = "Interactive query mode: input query from standard input")
+        boolean interactiveQuery = false;
+
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")
         String forwardDb = "ForwardIndex";
         @CommandLine.Option(names = {"-i", "--inverted-index"}, description = "The database name of the inverted index")
@@ -145,6 +157,19 @@ public class Main {
         if (commandOptions.shouldPrintRecords) {
             printRecords(commandOptions.outputFile, commandOptions.forwardDb);
         }
+
+        if (commandOptions.queryString != null) {
+            query(commandOptions.queryString, commandOptions.forwardDb, commandOptions.invertedDb);
+        }
+
+        if (commandOptions.interactiveQuery) {
+            try (Scanner scanner = new Scanner(System.in)) {
+                while (scanner.hasNextLine()) {
+                    query(scanner.nextLine(), commandOptions.forwardDb, commandOptions.invertedDb);
+                }
+            }
+        }
+
     }
 
 }

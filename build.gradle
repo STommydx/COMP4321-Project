@@ -26,3 +26,7 @@ dependencies {
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
+
+run {
+    standardInput = System.in
+}
