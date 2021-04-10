@@ -1,4 +1,4 @@
-package hk.ust.cse.comp4321.proj1;
+package hk.ust.cse.comp4321.proj1.rocks;
 
 import java.io.*;
 

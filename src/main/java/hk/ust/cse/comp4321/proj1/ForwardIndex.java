@@ -1,12 +1,12 @@
 package hk.ust.cse.comp4321.proj1;
 
+import hk.ust.cse.comp4321.proj1.rocks.RocksIntegerMap;
 import hk.ust.cse.comp4321.proj1.vsm.DocVectorUtils;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 

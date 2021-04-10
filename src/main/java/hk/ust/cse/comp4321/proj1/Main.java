@@ -1,5 +1,7 @@
 package hk.ust.cse.comp4321.proj1;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import hk.ust.cse.comp4321.proj1.rocks.RocksAbstractMap;
 import hk.ust.cse.comp4321.proj1.vsm.Query;
 import org.rocksdb.RocksDBException;
 import picocli.CommandLine;
@@ -15,6 +17,8 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 public class Main {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, int crawlPages, int crawlDepth) {
         Crawler crawler = new Crawler(crawlUrl, crawlPages, crawlDepth);
@@ -96,8 +100,10 @@ public class Main {
             ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
             InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
             invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
-            List<Map.Entry<Integer, Double>> result = query.query(forwardIndex, invertedIndex);
-            System.out.println("Raw query result: " + result);
+            List<Map.Entry<Integer, Double>> rawResult = query.query(forwardIndex, invertedIndex);
+            System.out.println("Raw query result: " + rawResult);
+            List<QueryResultEntry> result = QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50);
+            System.out.println("Result: " + mapper.writeValueAsString(result));
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

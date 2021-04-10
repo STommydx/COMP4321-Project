@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1;
 
+import hk.ust.cse.comp4321.proj1.rocks.RocksStringMap;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;

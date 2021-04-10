@@ -1,4 +1,4 @@
-package hk.ust.cse.comp4321.proj1;
+package hk.ust.cse.comp4321.proj1.rocks;
 
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -61,7 +61,7 @@ public abstract class RocksAbstractMap<K, V extends Serializable> {
         Path path = Paths.get(dbBasePath, dbName);
         File dbFolder = path.toFile();
         if (!dbFolder.exists() && !dbFolder.mkdirs()) {
-            System.err.println("Error: Fail to create database folder: " + path.toString());
+            System.err.println("Error: Fail to create database folder: " + path);
         }
         db = RocksDB.open(path.toString());
     }
