@@ -73,13 +73,12 @@ public class QueryUtils {
     }
 
     public static double dot(Map<String, Double> v1, Map<String, Double> v2) {
-        Set<String> words = v1.keySet();
-        words.retainAll(v2.keySet());
-        return words.stream().map(w -> v1.get(w) * v2.get(w)).reduce(0., Double::sum);
+        Map<String, Double> vProduct = DocVectorUtils.elementwiseProduct(v1, v2);
+        return vProduct.values().stream().reduce(0., Double::sum);
     }
 
     public static double l2Norm(Map<String, Double> v) {
-        return Math.sqrt(v.values().stream().map(x -> x * x).reduce(0., Double::sum));
+        return Math.sqrt(v.values().stream().mapToDouble(x -> x * x).sum());
     }
 
 }

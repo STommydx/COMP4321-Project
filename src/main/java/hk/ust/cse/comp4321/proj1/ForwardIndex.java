@@ -1,9 +1,12 @@
 package hk.ust.cse.comp4321.proj1;
 
+import hk.ust.cse.comp4321.proj1.vsm.DocVectorUtils;
 import org.rocksdb.RocksDBException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 
@@ -47,6 +50,13 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
             }
         }
         return nextID;
+    }
+
+    public Map<String, Double> getNormalizedTfVector(int docId) throws RocksDBException, IOException, ClassNotFoundException {
+        DocumentRecord documentRecord = get(docId);
+        Map<String, Integer> freqTable = documentRecord.getFreqTable();
+        int maxFreq = freqTable.values().stream().mapToInt(x -> x).max().orElse(0);
+        return DocVectorUtils.map(freqTable, x -> 1. * x / maxFreq);
     }
 
 }

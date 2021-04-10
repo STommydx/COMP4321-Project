@@ -29,18 +29,6 @@ public class SimpleWordQuery extends WordQuery {
     }
 
     @Override
-    public Map<Integer, Map<String, Double>> getDocumentVectors(InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException {
-        Map<Integer, Double> tfidf = invertedIndex.tfIdf(word, docs);
-        Map<Integer, Map<String, Double>> docVectors = new HashMap<>();
-        for (int doc : docs) {
-            Map<String, Double> docVector = new HashMap<>();
-            docVector.put(word, tfidf.getOrDefault(doc, 0.));
-            docVectors.put(doc, docVector);
-        }
-        return docVectors;
-    }
-
-    @Override
     public String toString() {
         return word;
     }

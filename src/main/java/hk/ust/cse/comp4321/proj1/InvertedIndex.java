@@ -40,15 +40,10 @@ public class InvertedIndex extends RocksStringMap<TreeMap<Integer, Integer>> {
         return termFreq.keySet();
     }
 
-    public Map<Integer, Double> tfIdf(String word, Set<Integer> documents) throws RocksDBException, IOException, ClassNotFoundException {
+    public double getIdf(String word) throws RocksDBException, IOException, ClassNotFoundException {
         Map<Integer, Integer> termFreq = get(word);
-        int docFreq = termFreq.values().stream().map(x -> x > 0 ? 1 : 0).reduce(0, Integer::sum);
-        double idf = Math.log(1.0 * numOfDocuments / docFreq) / Math.log(2.);
-        Map<Integer, Double> tfidf = new HashMap<>();
-        for (int doc : documents) {
-            tfidf.put(doc, termFreq.getOrDefault(doc, 0) * idf);
-        }
-        return tfidf;
+        int docFreq = termFreq.values().stream().mapToInt(x -> x > 0 ? 1 : 0).sum();
+        return Math.log(1.0 * numOfDocuments / docFreq) / Math.log(2.);
     }
 
 }

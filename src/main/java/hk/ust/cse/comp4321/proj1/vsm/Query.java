@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
+import hk.ust.cse.comp4321.proj1.ForwardIndex;
 import hk.ust.cse.comp4321.proj1.InvertedIndex;
 import org.rocksdb.RocksDBException;
 
@@ -11,11 +12,11 @@ public abstract class Query {
 
     public abstract Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException;
 
-    public abstract Map<Integer, Double> getSimilarityScore(InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException;
+    public abstract Map<Integer, Double> getSimilarityScore(ForwardIndex forwardIndex, InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException;
 
-    public List<Map.Entry<Integer, Double>> query(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
+    public List<Map.Entry<Integer, Double>> query(ForwardIndex forwardIndex, InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         Set<Integer> rootSet = getRootSet(invertedIndex);
-        Map<Integer, Double> similarityScore = getSimilarityScore(invertedIndex, rootSet);
+        Map<Integer, Double> similarityScore = getSimilarityScore(forwardIndex, invertedIndex, rootSet);
         return similarityScore.entrySet().stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                 .collect(Collectors.toList());

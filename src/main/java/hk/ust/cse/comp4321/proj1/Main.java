@@ -96,7 +96,7 @@ public class Main {
             ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
             InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
             invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
-            List<Map.Entry<Integer, Double>> result = query.query(invertedIndex);
+            List<Map.Entry<Integer, Double>> result = query.query(forwardIndex, invertedIndex);
             System.out.println("Raw query result: " + result);
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
