@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
+import hk.ust.cse.comp4321.proj1.ForwardIndex;
 import hk.ust.cse.comp4321.proj1.InvertedIndex;
 import org.rocksdb.RocksDBException;
 
@@ -44,10 +45,10 @@ public class BooleanQuery extends Query {
     }
 
     @Override
-    public Map<Integer, Double> getSimilarityScore(InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException {
+    public Map<Integer, Double> getSimilarityScore(ForwardIndex forwardIndex, InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException {
         List<Map<Integer, Double>> similarityScoreList = new ArrayList<>();
         for (Query subquery : queryList) {
-            similarityScoreList.add(subquery.getSimilarityScore(invertedIndex, docs));
+            similarityScoreList.add(subquery.getSimilarityScore(forwardIndex, invertedIndex, docs));
         }
         Map<Integer, Double> similarityScoreMap = new HashMap<>();
         for (int doc : docs) {
@@ -62,12 +63,11 @@ public class BooleanQuery extends Query {
     private double combineScore(List<Double> scores) {
         if (scores.isEmpty()) return 0.;
         if (op == Operator.AND) {
-            double scoreSum = scores.stream().map(x -> (1 - x) * (1 - x)).reduce(0., Double::sum)
-                    / scores.size();
+            double scoreSum = scores.stream().mapToDouble(x -> (1 - x) * (1 - x)).average().orElse(0);
             assert scoreSum >= 0. && scoreSum <= 1.;
             return 1 - Math.sqrt(scoreSum);
         } else if (op == Operator.OR) {
-            double scoreSum = scores.stream().map(x -> x * x).reduce(0., Double::sum) / scores.size();
+            double scoreSum = scores.stream().mapToDouble(x -> x * x).average().orElse(0.);
             assert scoreSum >= 0. && scoreSum <= 1.;
             return Math.sqrt(scoreSum);
         }
