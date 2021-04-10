@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hk.ust.cse.comp4321.proj1.rocks.RocksAbstractMap;
 import hk.ust.cse.comp4321.proj1.vsm.Query;
@@ -19,6 +20,13 @@ import java.util.TreeMap;
 public class Main {
 
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String forwardDbName = getValueOrDefault(System.getenv("SE_DB_FORWARD_INDEX"), "ForwardIndex");
+    private static final String invertedDbName = getValueOrDefault(System.getenv("SE_DB_INVERTED_INDEX"), "InvertedIndex");
+    private static final String lookupDbName = getValueOrDefault(System.getenv("SE_DB_LOOKUP_TABLE"), "LookupTable");
+
+    public static <T> T getValueOrDefault(T value, T defaultValue) {
+        return value == null ? defaultValue : value;
+    }
 
     public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, int crawlPages, int crawlDepth) {
         Crawler crawler = new Crawler(crawlUrl, crawlPages, crawlDepth);
@@ -92,7 +100,7 @@ public class Main {
         }
     }
 
-    public static void query(String queryString, String forwardDb, String invertedDb) {
+    public static void queryAndPrint(String queryString, String forwardDb, String invertedDb) {
         System.out.println("Now querying: '" + queryString + "'");
         Query query = Query.parse(queryString);
         System.out.println("Parsed query: '" + query + "'");
@@ -107,6 +115,20 @@ public class Main {
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String query(String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
+        Query query = Query.parse(queryString);
+        ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
+        InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
+        invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
+        List<Map.Entry<Integer, Double>> rawResult = query.query(forwardIndex, invertedIndex);
+        List<QueryResultEntry> result = QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50);
+        return mapper.writeValueAsString(result);
+    }
+
+    public static String query(String queryString) throws RocksDBException, IOException, ClassNotFoundException {
+        return query(queryString, forwardDbName, invertedDbName);
     }
 
     public static class CommandOptions {
@@ -125,11 +147,11 @@ public class Main {
         boolean interactiveQuery = false;
 
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")
-        String forwardDb = "ForwardIndex";
+        String forwardDb = forwardDbName;
         @CommandLine.Option(names = {"-i", "--inverted-index"}, description = "The database name of the inverted index")
-        String invertedDb = "InvertedIndex";
+        String invertedDb = invertedDbName;
         @CommandLine.Option(names = {"-l", "--lookup-table"}, description = "The database name of the url to id lookup table")
-        String lookupDb = "LookupTable";
+        String lookupDb = lookupDbName;
 
         @CommandLine.Option(names = {"-p", "--print"}, description = "Printing database forward index to file")
         boolean shouldPrintRecords = false;
@@ -165,13 +187,13 @@ public class Main {
         }
 
         if (commandOptions.queryString != null) {
-            query(commandOptions.queryString, commandOptions.forwardDb, commandOptions.invertedDb);
+            queryAndPrint(commandOptions.queryString, commandOptions.forwardDb, commandOptions.invertedDb);
         }
 
         if (commandOptions.interactiveQuery) {
             try (Scanner scanner = new Scanner(System.in)) {
                 while (scanner.hasNextLine()) {
-                    query(scanner.nextLine(), commandOptions.forwardDb, commandOptions.invertedDb);
+                    queryAndPrint(scanner.nextLine(), commandOptions.forwardDb, commandOptions.invertedDb);
                 }
             }
         }

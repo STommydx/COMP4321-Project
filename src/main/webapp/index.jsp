@@ -1,16 +1,9 @@
-<%@ page import="hk.ust.cse.comp4321.proj1.Main" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
     <title>Title</title>
 </head>
 <body>
-<%
-    String queryString = request.getParameter("q");
-    if (queryString != null) {
-        String queryResult = Main.query(queryString);
-        out.print(queryResult);
-    }
-%>
+CSE Search!
 </body>
 </html>

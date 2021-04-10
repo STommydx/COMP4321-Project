@@ -4,10 +4,7 @@ import hk.ust.cse.comp4321.proj1.rocks.RocksStringMap;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 public class InvertedIndex extends RocksStringMap<TreeMap<Integer, Integer>> {
 
@@ -38,7 +35,7 @@ public class InvertedIndex extends RocksStringMap<TreeMap<Integer, Integer>> {
 
     public Set<Integer> getDocumentsFromWord(String word) throws RocksDBException, IOException, ClassNotFoundException {
         Map<Integer, Integer> termFreq = get(word);
-        return termFreq.keySet();
+        return termFreq != null ? termFreq.keySet() : new HashSet<>();
     }
 
     public double getIdf(String word) throws RocksDBException, IOException, ClassNotFoundException {
