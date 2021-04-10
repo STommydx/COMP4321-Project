@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1;
 
+import hk.ust.cse.comp4321.proj1.nlp.NLPUtils;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Response;
 import org.jsoup.HttpStatusException;
@@ -120,9 +121,9 @@ public class Crawler {
                 // Check lang end
 
                 Vector<String> words = CrawlUtils.extractWords(doc).stream()
-                        .filter(CrawlUtils::isAlphaNumeric)
-                        .filter(CrawlUtils::stopwordFilter)
-                        .map(CrawlUtils::stemFilter)
+                        .filter(NLPUtils::isAlphaNumeric)
+                        .filter(NLPUtils::stopwordFilter)
+                        .map(NLPUtils::stemFilter)
                         .collect(Collectors.toCollection(Vector::new));
 
                 Vector<String> extractedLinks = CrawlUtils.extractLinks(doc);

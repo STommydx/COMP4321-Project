@@ -8,7 +8,7 @@
 
 */ 
 
-package hk.ust.cse.comp4321.proj1;
+package hk.ust.cse.comp4321.proj1.nlp;
 
 class NewString {
   public String str;

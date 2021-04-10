@@ -1,11 +1,10 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
-import hk.ust.cse.comp4321.proj1.CrawlUtils;
+import hk.ust.cse.comp4321.proj1.nlp.NLPUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class QueryUtils {
@@ -46,8 +45,8 @@ public class QueryUtils {
     public static List<String> preprocessQuery(List<String> query) {
         return query.stream()
                 .map(QueryUtils::extractSpecialTokens)
-                .filter(CrawlUtils::stopwordFilter)
-                .map(CrawlUtils::stemFilter)
+                .filter(NLPUtils::stopwordFilter)
+                .map(NLPUtils::stemFilter)
                 .collect(Collectors.toList());
     }
 

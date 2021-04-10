@@ -1,6 +1,9 @@
-package hk.ust.cse.comp4321.proj1;
+package hk.ust.cse.comp4321.proj1.nlp;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 
 public class StopStem {
