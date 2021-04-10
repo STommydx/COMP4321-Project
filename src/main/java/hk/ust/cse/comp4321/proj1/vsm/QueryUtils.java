@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 
 public class QueryUtils {
 
+    public static final String AND_TOKEN = "_AND_";
+    public static final String OR_TOKEN = "_OR_";
+
     public static List<String> tokenizeQuery(String query) {
         List<String> tokenizedQuery = new ArrayList<>();
         StringBuilder buffer = new StringBuilder();
@@ -30,11 +33,39 @@ public class QueryUtils {
         return tokenizedQuery;
     }
 
+    public static String extractSpecialTokens(String token) {
+        if (token.equalsIgnoreCase("AND")) {
+            return AND_TOKEN;
+        }
+        if (token.equalsIgnoreCase("OR")) {
+            return OR_TOKEN;
+        }
+        return token;
+    }
+
     public static List<String> preprocessQuery(List<String> query) {
         return query.stream()
+                .map(QueryUtils::extractSpecialTokens)
                 .filter(CrawlUtils::stopwordFilter)
                 .map(CrawlUtils::stemFilter)
                 .collect(Collectors.toList());
+    }
+
+    public static List<List<String>> querySplit(List<String> query, String delimiter) {
+        List<List<String>> subQueries = new ArrayList<>();
+        List<String> buffer = new ArrayList<>();
+        for (String queryWord : query) {
+            if (queryWord.equals(delimiter)) {
+                if (!buffer.isEmpty()) {
+                    subQueries.add(buffer);
+                    buffer = new ArrayList<>();
+                }
+            } else {
+                buffer.add(queryWord);
+            }
+        }
+        if (!buffer.isEmpty()) subQueries.add(buffer);
+        return subQueries;
     }
 
     public static double cosineSimilarity(Map<String, Double> v1, Map<String, Double> v2) {

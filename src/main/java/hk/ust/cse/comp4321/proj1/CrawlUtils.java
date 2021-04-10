@@ -109,7 +109,8 @@ public class CrawlUtils {
      * @return
      */
     public static boolean stopwordFilter(String word) {
-        return !stopStem.isStopWord(word);
+        if (word.startsWith("_")) return true;  // special tokens
+        return !stopStem.isStopWord(word.toLowerCase());
     }
 
     /**
@@ -117,6 +118,7 @@ public class CrawlUtils {
      * @return
      */
     public static String stemFilter(String word) {
+        if (word.startsWith("_")) return word;  // special tokens
         return stopStem.stem(word);
     }
 }

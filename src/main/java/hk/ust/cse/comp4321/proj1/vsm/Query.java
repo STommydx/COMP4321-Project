@@ -28,7 +28,23 @@ public abstract class Query {
     }
 
     public static Query parse(List<String> query) {
-        // TODO: parse boolean logic here
+        // parse OR operator
+        List<List<String>> orSubRawQueries = QueryUtils.querySplit(query, QueryUtils.OR_TOKEN);
+        if (orSubRawQueries.size() >= 2) {
+            List<Query> orSubQueries = orSubRawQueries.stream()
+                    .map(Query::parse)
+                    .collect(Collectors.toList());
+            return new BooleanQuery(orSubQueries, BooleanQuery.Operator.OR);
+        }
+
+        // parse AND operator
+        List<List<String>> andSubRawQueries = QueryUtils.querySplit(query, QueryUtils.AND_TOKEN);
+        if (andSubRawQueries.size() >= 2) {
+            List<Query> andSubQueries = andSubRawQueries.stream()
+                    .map(Query::parse)
+                    .collect(Collectors.toList());
+            return new BooleanQuery(andSubQueries, BooleanQuery.Operator.AND);
+        }
 
         List<WordQuery> wordQueryList = new ArrayList<>();
         for (String queryWord : query) {
