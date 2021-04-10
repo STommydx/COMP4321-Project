@@ -1,9 +1,10 @@
 package hk.ust.cse.comp4321.proj1;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hk.ust.cse.comp4321.proj1.rocks.RocksAbstractMap;
 import hk.ust.cse.comp4321.proj1.vsm.Query;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.rocksdb.RocksDBException;
 import picocli.CommandLine;
 
@@ -24,7 +25,8 @@ public class Main {
     private static final String invertedDbName = getValueOrDefault(System.getenv("SE_DB_INVERTED_INDEX"), "InvertedIndex");
     private static final String lookupDbName = getValueOrDefault(System.getenv("SE_DB_LOOKUP_TABLE"), "LookupTable");
 
-    public static <T> T getValueOrDefault(T value, T defaultValue) {
+    @NotNull
+    public static <T> T getValueOrDefault(@Nullable T value, T defaultValue) {
         return value == null ? defaultValue : value;
     }
 
@@ -56,10 +58,9 @@ public class Main {
                     urlDatabase.put(documentRecord.getUrl().toString(), currentKey);
                     recordAdded++;
                 } else {
-                    currentKey = urlDatabase.get(documentRecord.getUrl().toString());
-
+                    currentKey = urlKey;
                     DocumentRecord dbRecord = forwardDatabase.get(currentKey);
-                    if (dbRecord.getLastModificationDate().equals(documentRecord.getLastModificationDate())) {
+                    if (dbRecord != null && dbRecord.getLastModificationDate().equals(documentRecord.getLastModificationDate())) {
                         // same modification date, do nothing
                         continue;
                     }
@@ -142,7 +143,7 @@ public class Main {
         int crawlPages = 30;
 
         @CommandLine.Option(names = {"-q", "--query"}, description = "The query term for query")
-        String queryString = null;
+        @Nullable String queryString = null;
         @CommandLine.Option(names = "--query-interactive", description = "Interactive query mode: input query from standard input")
         boolean interactiveQuery = false;
 

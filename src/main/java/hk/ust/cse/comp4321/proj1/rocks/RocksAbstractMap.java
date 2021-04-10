@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1.rocks;
 
+import org.jetbrains.annotations.Nullable;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -36,7 +37,7 @@ public abstract class RocksAbstractMap<K, V extends Serializable> {
             return bytesToKey(it.key());
         }
 
-        public V value() throws IOException, ClassNotFoundException {
+        public @Nullable V value() throws IOException, ClassNotFoundException {
             //noinspection unchecked
             return (V) SerializationUtils.deserialize(it.value());
         }
@@ -66,19 +67,19 @@ public abstract class RocksAbstractMap<K, V extends Serializable> {
         db = RocksDB.open(path.toString());
     }
 
-    public V get(K key) throws RocksDBException, IOException, ClassNotFoundException {
+    public @Nullable V get(K key) throws RocksDBException, IOException, ClassNotFoundException {
         byte[] valBytes = db.get(keyToBytes(key));
         //noinspection unchecked
         return (V) SerializationUtils.deserialize(valBytes);
     }
 
-    public V put(K key, V value) throws RocksDBException, IOException, ClassNotFoundException {
+    public @Nullable V put(K key, V value) throws RocksDBException, IOException, ClassNotFoundException {
         V prevValue = get(key);
         db.put(keyToBytes(key), SerializationUtils.serialize(value));
         return prevValue;
     }
 
-    public V remove(K key) throws RocksDBException, IOException, ClassNotFoundException {
+    public @Nullable V remove(K key) throws RocksDBException, IOException, ClassNotFoundException {
         V prevValue = get(key);
         db.delete(keyToBytes(key));
         return prevValue;

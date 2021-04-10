@@ -11,12 +11,12 @@ public class DocumentRecord implements Serializable {
 
     private static final long serialVersionUID = -2131632934122501664L;
 
-    private String title;
+    private String title = "";
     private final URL url;
-    private Date lastModificationDate;
+    private Date lastModificationDate = new Date();
     private int pageSize;
-    private TreeMap<String, Integer> freqTable;
-    private ArrayList<URL> childLinks;
+    private TreeMap<String, Integer> freqTable = new TreeMap<>();
+    private ArrayList<URL> childLinks = new ArrayList<>();
 
     public DocumentRecord(URL url) {
         this.url = url;

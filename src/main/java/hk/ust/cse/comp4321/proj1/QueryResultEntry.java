@@ -28,7 +28,9 @@ public class QueryResultEntry {
         List<QueryResultEntry> resultEntries = new ArrayList<>();
         for (Map.Entry<Integer, Double> entry : result) {
             if (resultEntries.size() > maxCount) break;
-            resultEntries.add(new QueryResultEntry(entry.getValue(), forwardIndex.get(entry.getKey())));
+            DocumentRecord documentRecord = forwardIndex.get(entry.getKey());
+            if (documentRecord != null)
+                resultEntries.add(new QueryResultEntry(entry.getValue(), documentRecord));
         }
         return resultEntries;
     }

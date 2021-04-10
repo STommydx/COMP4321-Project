@@ -2,6 +2,8 @@ package hk.ust.cse.comp4321.proj1;
 
 import hk.ust.cse.comp4321.proj1.rocks.RocksIntegerMap;
 import hk.ust.cse.comp4321.proj1.vsm.DocVectorUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
@@ -12,7 +14,7 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 
     private static final Map<String, ForwardIndex> instances = new HashMap<>();
 
-    public static synchronized ForwardIndex getInstance(String dbName) throws RocksDBException {
+    public static synchronized ForwardIndex getInstance(@NotNull String dbName) throws RocksDBException {
         ForwardIndex forwardIndex = instances.get(dbName);
         if (forwardIndex == null) {
             forwardIndex = new ForwardIndex(dbName);
@@ -21,6 +23,7 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
         return forwardIndex;
     }
 
+    @Nullable
     private Integer nextID = null;
 
     private ForwardIndex(String dbName) throws RocksDBException {
@@ -28,7 +31,7 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
     }
 
     synchronized public Integer getAndIncrementNextID() {
-        getNextID();
+        nextID = getNextID();
         return nextID++;
     }
 
@@ -54,7 +57,7 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 
     public Map<String, Double> getNormalizedTfVector(int docId) throws RocksDBException, IOException, ClassNotFoundException {
         DocumentRecord documentRecord = get(docId);
-        Map<String, Integer> freqTable = documentRecord.getFreqTable();
+        Map<String, Integer> freqTable = documentRecord != null ? documentRecord.getFreqTable() : new HashMap<>();
         int maxFreq = freqTable.values().stream().mapToInt(x -> x).max().orElse(0);
         return DocVectorUtils.map(freqTable, x -> 1. * x / maxFreq);
     }

@@ -19,7 +19,9 @@ public abstract class WordQuery extends Query {
         Map<String, Double> queryVector = getQueryVector();
         Map<Integer, Double> similarityScores = new HashMap<>();
         for (int doc : docs) {
-            similarityScores.put(doc, QueryUtils.cosineSimilarity(documentVectors.get(doc), queryVector));
+            Map<String, Double> v1 = documentVectors.get(doc);
+            if (v1 != null)
+                similarityScores.put(doc, QueryUtils.cosineSimilarity(v1, queryVector));
         }
         return similarityScores;
     }

@@ -1,6 +1,7 @@
 package hk.ust.cse.comp4321.proj1;
 
 import hk.ust.cse.comp4321.proj1.rocks.RocksStringMap;
+import org.jetbrains.annotations.NotNull;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ public class InvertedIndex extends RocksStringMap<TreeMap<Integer, Integer>> {
 
     private static final Map<String, InvertedIndex> instances = new HashMap<>();
 
-    public static synchronized InvertedIndex getInstance(String dbName) throws RocksDBException {
+    public static synchronized InvertedIndex getInstance(@NotNull String dbName) throws RocksDBException {
         InvertedIndex invertedIndex = instances.get(dbName);
         if (invertedIndex == null) {
             invertedIndex = new InvertedIndex(dbName);
@@ -40,6 +41,7 @@ public class InvertedIndex extends RocksStringMap<TreeMap<Integer, Integer>> {
 
     public double getIdf(String word) throws RocksDBException, IOException, ClassNotFoundException {
         Map<Integer, Integer> termFreq = get(word);
+        if (termFreq == null) return 0.;
         int docFreq = termFreq.values().stream().mapToInt(x -> x > 0 ? 1 : 0).sum();
         return Math.log(1.0 * numOfDocuments / docFreq) / Math.log(2.);
     }
