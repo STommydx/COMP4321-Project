@@ -4,11 +4,15 @@
 
 <%
     String queryString = request.getParameter("q");
-    try {
-        String result = Main.query(queryString);
-        out.write(result);
-    } catch (RocksDBException | ClassNotFoundException e) {
-        response.setStatus(500);
-        out.write(e.getMessage());
+    if (queryString == null) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    } else {
+        try {
+            String result = Main.query(queryString);
+            out.write(result);
+        } catch (RocksDBException | ClassNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.write(e.getMessage());
+        }
     }
 %>

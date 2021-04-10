@@ -1,6 +1,7 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
 import hk.ust.cse.comp4321.proj1.nlp.NLPUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ public class QueryUtils {
     public static final String AND_TOKEN = "_AND_";
     public static final String OR_TOKEN = "_OR_";
 
-    public static List<String> tokenizeQuery(String query) {
+    public static List<String> tokenizeQuery(@NotNull String query) {
         List<String> tokenizedQuery = new ArrayList<>();
         StringBuilder buffer = new StringBuilder();
         boolean shouldEscape = false;
@@ -32,7 +33,7 @@ public class QueryUtils {
         return tokenizedQuery;
     }
 
-    public static String extractSpecialTokens(String token) {
+    public static String extractSpecialTokens(@NotNull String token) {
         if (token.equalsIgnoreCase("AND")) {
             return AND_TOKEN;
         }

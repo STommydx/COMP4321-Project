@@ -2,6 +2,7 @@ package hk.ust.cse.comp4321.proj1.vsm;
 
 import hk.ust.cse.comp4321.proj1.ForwardIndex;
 import hk.ust.cse.comp4321.proj1.InvertedIndex;
+import org.jetbrains.annotations.NotNull;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public abstract class Query {
                 .collect(Collectors.toList());
     }
 
-    public static Query parse(String query) {
+    public static Query parse(@NotNull String query) {
         List<String> tokenizeQuery = QueryUtils.tokenizeQuery(query);
         List<String> preprocessedQuery = QueryUtils.preprocessQuery(tokenizeQuery);
         return parse(preprocessedQuery);

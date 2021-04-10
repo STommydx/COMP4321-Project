@@ -118,7 +118,7 @@ public class Main {
         }
     }
 
-    public static String query(String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
+    public static String query(@NotNull String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
         Query query = Query.parse(queryString);
         ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
         InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
@@ -128,7 +128,7 @@ public class Main {
         return mapper.writeValueAsString(result);
     }
 
-    public static String query(String queryString) throws RocksDBException, IOException, ClassNotFoundException {
+    public static String query(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
         return query(queryString, forwardDbName, invertedDbName);
     }
 
