@@ -155,39 +155,27 @@ public class Porter {
 
         if (str.charAt(str.length() - 1) == 's') {
             if ((hasSuffix(str, "sses", stem)) || (hasSuffix(str, "ies", stem))) {
-                StringBuilder tmp = new StringBuilder();
-                for (int i = 0; i < str.length() - 2; i++)
-                    tmp.append(str.charAt(i));
-                str = tmp.toString();
+                str = str.substring(0, str.length() - 2);
             } else {
                 if ((str.length() == 1) && (str.charAt(0) == 's')) {
                     str = "";
                     return str;
                 }
                 if (str.charAt(str.length() - 2) != 's') {
-                    StringBuilder tmp = new StringBuilder();
-                    for (int i = 0; i < str.length() - 1; i++)
-                        tmp.append(str.charAt(i));
-                    str = tmp.toString();
+                    str = str.substring(0, str.length() - 1);
                 }
             }
         }
 
         if (hasSuffix(str, "eed", stem)) {
             if (measure(stem.str) > 0) {
-                StringBuilder tmp = new StringBuilder();
-                for (int i = 0; i < str.length() - 1; i++)
-                    tmp.append(str.charAt(i));
-                str = tmp.toString();
+                str = str.substring(0, str.length() - 1);
             }
         } else {
             if ((hasSuffix(str, "ed", stem)) || (hasSuffix(str, "ing", stem))) {
                 if (containsVowel(stem.str)) {
 
-                    StringBuilder tmp = new StringBuilder();
-                    for (int i = 0; i < stem.str.length(); i++)
-                        tmp.append(str.charAt(i));
-                    str = tmp.toString();
+                    str = str.substring(0, stem.str.length());
                     if (str.length() == 1)
                         return str;
 
@@ -199,10 +187,7 @@ public class Porter {
                         if ((str.charAt(length - 1) == str.charAt(length - 2))
                                 && (str.charAt(length - 1) != 'l') && (str.charAt(length - 1) != 's') && (str.charAt(length - 1) != 'z')) {
 
-                            tmp = new StringBuilder();
-                            for (int i = 0; i < str.length() - 1; i++)
-                                tmp.append(str.charAt(i));
-                            str = tmp.toString();
+                            str = str.substring(0, str.length() - 1);
                         } else if (measure(str) == 1) {
                             if (cvc(str))
                                 str += "e";
@@ -214,10 +199,7 @@ public class Porter {
 
         if (hasSuffix(str, "y", stem))
             if (containsVowel(stem.str)) {
-                StringBuilder tmp = new StringBuilder();
-                for (int i = 0; i < str.length() - 1; i++)
-                    tmp.append(str.charAt(i));
-                str = tmp + "i";
+                str = str.substring(0, str.length() - 1) + "i";
             }
         return str;
     }
@@ -306,17 +288,11 @@ public class Porter {
 
         if (str.charAt(str.length() - 1) == 'e') {
             if (measure(str) > 1) {/* measure(str)==measure(stem) if ends in vowel */
-                StringBuilder tmp = new StringBuilder();
-                for (int i = 0; i < str.length() - 1; i++)
-                    tmp.append(str.charAt(i));
-                str = tmp.toString();
+                str = str.substring(0, str.length() - 1);
             } else if (measure(str) == 1) {
-                StringBuilder stem = new StringBuilder();
-                for (int i = 0; i < str.length() - 1; i++)
-                    stem.append(str.charAt(i));
-
-                if (!cvc(stem.toString()))
-                    str = stem.toString();
+                String stem = str.substring(0, str.length() - 1);
+                if (!cvc(stem))
+                    str = stem;
             }
         }
 
@@ -324,10 +300,7 @@ public class Porter {
             return str;
         if ((str.charAt(str.length() - 1) == 'l') && (str.charAt(str.length() - 2) == 'l') && (measure(str) > 1))
             if (measure(str) > 1) {/* measure(str)==measure(stem) if ends in vowel */
-                StringBuilder tmp = new StringBuilder();
-                for (int i = 0; i < str.length() - 1; i++)
-                    tmp.append(str.charAt(i));
-                str = tmp.toString();
+                str = str.substring(0, str.length() - 1);
             }
         return str;
     }
@@ -338,10 +311,7 @@ public class Porter {
 
         for (String prefix : prefixes) {
             if (str.startsWith(prefix)) {
-                StringBuilder temp = new StringBuilder();
-                for (int j = 0; j < str.length() - prefix.length(); j++)
-                    temp.append(str.charAt(j + prefix.length()));
-                return temp.toString();
+                return str.substring(prefix.length());
             }
         }
 
