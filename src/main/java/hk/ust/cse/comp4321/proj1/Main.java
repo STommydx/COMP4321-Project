@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Main {
 
@@ -48,6 +45,9 @@ public class Main {
             int recordAdded = 0;
             int recordModified = 0;
 
+            // store inverted index updates in memory first
+            Map<String, TreeMap<Integer, Integer>> invertedIndexUpdates = new HashMap<>();
+
             for (DocumentRecord documentRecord : documentRecordList) {
                 Integer urlKey = urlDatabase.get(documentRecord.getUrl().toString());
                 Integer currentKey;
@@ -67,21 +67,38 @@ public class Main {
                     recordModified++;
                 }
 
-                // update forward index and inverted index
+                // update forward index
                 forwardDatabase.put(currentKey, documentRecord);
+
+                // batch inverted index updates
                 for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {
                     String keyword = item.getKey();
-                    TreeMap<Integer, Integer> data = invertedDatabase.get(keyword);
-                    // can be empty if keyword is not yet in the inverted index
-                    if (data == null) {
-                        data = new TreeMap<>();
-                    }
+                    TreeMap<Integer, Integer> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
                     data.put(currentKey, item.getValue());
-                    invertedDatabase.put(keyword, data);
+                    invertedIndexUpdates.put(keyword, data);
                 }
             }
+
+            System.out.println("Successfully inserted all records into Forward Index.");
+
+            // update inverted index
+            int invertedAdded = 0;
+            int invertedModified = 0;
+            for (Map.Entry<String, TreeMap<Integer, Integer>> entry : invertedIndexUpdates.entrySet()) {
+                TreeMap<Integer, Integer> data = invertedDatabase.get(entry.getKey());
+                if (data != null) {
+                    data.putAll(entry.getValue());
+                    invertedDatabase.put(entry.getKey(), data);
+                    invertedModified++;
+                } else {
+                    invertedDatabase.put(entry.getKey(), entry.getValue());
+                    invertedAdded++;
+                }
+            }
+
             System.out.println("Successfully inserted all records into RocksDB.");
             System.out.println("Forward Index: " + recordAdded + " added. " + recordModified + " modified.");
+            System.out.println("Inverted Index: " + invertedAdded + " added. " + invertedModified + " modified.");
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
