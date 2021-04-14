@@ -13,8 +13,6 @@ import java.util.Vector;
 
 public class CrawlUtils {
 
-    private static final StopStem stopStem = new StopStem();
-
     private CrawlUtils() {
     }
 
@@ -100,23 +98,4 @@ public class CrawlUtils {
         }
     }
 
-    public static boolean isAlphaNumeric(String s) {
-        return s != null && s.matches("^[a-zA-Z0-9]+$");
-    }
-
-    /**
-     * @param word
-     * @return
-     */
-    public static boolean stopwordFilter(String word) {
-        return !stopStem.isStopWord(word);
-    }
-
-    /**
-     * @param word
-     * @return
-     */
-    public static String stemFilter(String word) {
-        return stopStem.stem(word);
-    }
 }

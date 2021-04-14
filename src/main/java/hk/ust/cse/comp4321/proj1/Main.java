@@ -1,5 +1,10 @@
 package hk.ust.cse.comp4321.proj1;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import hk.ust.cse.comp4321.proj1.rocks.RocksAbstractMap;
+import hk.ust.cse.comp4321.proj1.vsm.Query;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.rocksdb.RocksDBException;
 import picocli.CommandLine;
 
@@ -8,12 +13,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Main {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String forwardDbName = getValueOrDefault(System.getenv("SE_DB_FORWARD_INDEX"), "ForwardIndex");
+    private static final String invertedDbName = getValueOrDefault(System.getenv("SE_DB_INVERTED_INDEX"), "InvertedIndex");
+    private static final String lookupDbName = getValueOrDefault(System.getenv("SE_DB_LOOKUP_TABLE"), "LookupTable");
+
+    @NotNull
+    public static <T> T getValueOrDefault(@Nullable T value, T defaultValue) {
+        return value == null ? defaultValue : value;
+    }
 
     public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, int crawlPages, int crawlDepth) {
         Crawler crawler = new Crawler(crawlUrl, crawlPages, crawlDepth);
@@ -33,41 +45,60 @@ public class Main {
             int recordAdded = 0;
             int recordModified = 0;
 
+            // store inverted index updates in memory first
+            Map<String, TreeMap<Integer, Integer>> invertedIndexUpdates = new HashMap<>();
+
             for (DocumentRecord documentRecord : documentRecordList) {
                 Integer urlKey = urlDatabase.get(documentRecord.getUrl().toString());
                 Integer currentKey;
 
                 if (urlKey == null) {  // if url not exist in database
                     // get a new key to for this url/documentRecord and update DB
-                    currentKey = forwardDatabase.getNextID();
+                    currentKey = forwardDatabase.getAndIncrementNextID();
                     urlDatabase.put(documentRecord.getUrl().toString(), currentKey);
                     recordAdded++;
                 } else {
-                    currentKey = urlDatabase.get(documentRecord.getUrl().toString());
-
+                    currentKey = urlKey;
                     DocumentRecord dbRecord = forwardDatabase.get(currentKey);
-                    if (dbRecord.getLastModificationDate().equals(documentRecord.getLastModificationDate())) {
+                    if (dbRecord != null && dbRecord.getLastModificationDate().equals(documentRecord.getLastModificationDate())) {
                         // same modification date, do nothing
                         continue;
                     }
                     recordModified++;
                 }
 
-                // update forward index and inverted index
+                // update forward index
                 forwardDatabase.put(currentKey, documentRecord);
+
+                // batch inverted index updates
                 for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {
                     String keyword = item.getKey();
-                    TreeMap<Integer, Integer> data = invertedDatabase.get(keyword);
-                    // can be empty if keyword is not yet in the inverted index
-                    if (data == null) {
-                        data = new TreeMap<>();
-                    }
+                    TreeMap<Integer, Integer> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
                     data.put(currentKey, item.getValue());
-                    invertedDatabase.put(keyword, data);
+                    invertedIndexUpdates.put(keyword, data);
                 }
             }
+
+            System.out.println("Successfully inserted all records into Forward Index.");
+
+            // update inverted index
+            int invertedAdded = 0;
+            int invertedModified = 0;
+            for (Map.Entry<String, TreeMap<Integer, Integer>> entry : invertedIndexUpdates.entrySet()) {
+                TreeMap<Integer, Integer> data = invertedDatabase.get(entry.getKey());
+                if (data != null) {
+                    data.putAll(entry.getValue());
+                    invertedDatabase.put(entry.getKey(), data);
+                    invertedModified++;
+                } else {
+                    invertedDatabase.put(entry.getKey(), entry.getValue());
+                    invertedAdded++;
+                }
+            }
+
             System.out.println("Successfully inserted all records into RocksDB.");
             System.out.println("Forward Index: " + recordAdded + " added. " + recordModified + " modified.");
+            System.out.println("Inverted Index: " + invertedAdded + " added. " + invertedModified + " modified.");
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -87,14 +118,35 @@ public class Main {
         }
     }
 
-    public static String query(String queryString) {
+    public static void queryAndPrint(String queryString, String forwardDb, String invertedDb) {
+        System.out.println("Now querying: '" + queryString + "'");
+        Query query = Query.parse(queryString);
+        System.out.println("Parsed query: '" + query + "'");
         try {
-            InvertedIndex invertedDatabase = InvertedIndex.getInstance("InvertedIndex");
-            return invertedDatabase.get(queryString).toString();
+            ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
+            InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
+            invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
+            List<Map.Entry<Integer, Double>> rawResult = query.query(forwardIndex, invertedIndex);
+            System.out.println("Raw query result: " + rawResult);
+            List<QueryResultEntry> result = QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50);
+            System.out.println("Result: " + mapper.writeValueAsString(result));
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return "Error!";
+    }
+
+    public static String query(@NotNull String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
+        Query query = Query.parse(queryString);
+        ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
+        InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
+        invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
+        List<Map.Entry<Integer, Double>> rawResult = query.query(forwardIndex, invertedIndex);
+        List<QueryResultEntry> result = QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50);
+        return mapper.writeValueAsString(result);
+    }
+
+    public static String query(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
+        return query(queryString, forwardDbName, invertedDbName);
     }
 
     public static class CommandOptions {
@@ -106,12 +158,18 @@ public class Main {
         int crawlDepth = 5;
         @CommandLine.Option(names = {"-n", "--num-docs"}, description = "The maximum number of documents that should be crawled")
         int crawlPages = 30;
+
+        @CommandLine.Option(names = {"-q", "--query"}, description = "The query term for query")
+        @Nullable String queryString = null;
+        @CommandLine.Option(names = "--query-interactive", description = "Interactive query mode: input query from standard input")
+        boolean interactiveQuery = false;
+
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")
-        String forwardDb = "ForwardIndex";
+        String forwardDb = forwardDbName;
         @CommandLine.Option(names = {"-i", "--inverted-index"}, description = "The database name of the inverted index")
-        String invertedDb = "InvertedIndex";
+        String invertedDb = invertedDbName;
         @CommandLine.Option(names = {"-l", "--lookup-table"}, description = "The database name of the url to id lookup table")
-        String lookupDb = "LookupTable";
+        String lookupDb = lookupDbName;
 
         @CommandLine.Option(names = {"-p", "--print"}, description = "Printing database forward index to file")
         boolean shouldPrintRecords = false;
@@ -145,6 +203,19 @@ public class Main {
         if (commandOptions.shouldPrintRecords) {
             printRecords(commandOptions.outputFile, commandOptions.forwardDb);
         }
+
+        if (commandOptions.queryString != null) {
+            queryAndPrint(commandOptions.queryString, commandOptions.forwardDb, commandOptions.invertedDb);
+        }
+
+        if (commandOptions.interactiveQuery) {
+            try (Scanner scanner = new Scanner(System.in)) {
+                while (scanner.hasNextLine()) {
+                    queryAndPrint(scanner.nextLine(), commandOptions.forwardDb, commandOptions.invertedDb);
+                }
+            }
+        }
+
     }
 
 }

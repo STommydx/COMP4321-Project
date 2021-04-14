@@ -1,4 +1,6 @@
-package hk.ust.cse.comp4321.proj1;
+package hk.ust.cse.comp4321.proj1.rocks;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 
@@ -13,6 +15,7 @@ public class SerializationUtils {
         }
     }
 
+    @Nullable
     public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
         if (bytes == null) return null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {

@@ -8,9 +8,17 @@ services:
     environment:
       SE_DB_BASE_PATH: /srv/rocksdb
     ports:
-      - 3000:8080
+      - 8080
     volumes:
       - rocksdb:/srv/rocksdb
+  ui:
+    image: comp4321-se-ui
+    build: ../comp4321-proj-ui
+    restart: always
+    depends_on:
+      - web
+    ports:
+      - 3000:80
 
 volumes:
   rocksdb:

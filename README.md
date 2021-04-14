@@ -53,9 +53,9 @@ Although theoretically this project should have no problem running in the Window
 
 #### Tomcat
 
-To run the search engine server, we suggest using Tomcat. The recommended version is `10.0.4`.
+To run the search engine server, we suggest using Tomcat. The recommended version is `10.0.5`.
 
-Download and extract the [package](https://tomcat.apache.org/download-10.cgi) to any location you prefer. Alternatively, you may install Tomcat through your system's package manager. You may want to set the environmental variable `CATALINA_HOME` variable to the installation location `apache-tomcat-10.0.4`.  
+Download and extract the [package](https://tomcat.apache.org/download-10.cgi) to any location you prefer. Alternatively, you may install Tomcat through your system's package manager. You may want to set the environmental variable `CATALINA_HOME` variable to the installation location `apache-tomcat-10.0.5`.  
 
 ### Building
 

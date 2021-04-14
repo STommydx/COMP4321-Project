@@ -18,11 +18,17 @@ dependencies {
     implementation 'org.rocksdb:rocksdbjni:6.15.2'
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'info.picocli:picocli:4.6.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.2'
     compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
     compileOnly 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
+    compileOnly 'org.jetbrains:annotations:20.1.0'
     annotationProcessor 'info.picocli:picocli-codegen:4.6.1'
 }
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+run {
+    standardInput = System.in
 }
