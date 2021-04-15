@@ -1,11 +1,9 @@
 package hk.ust.cse.comp4321.proj1;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class DocumentRecord implements Serializable {
 
@@ -17,6 +15,7 @@ public class DocumentRecord implements Serializable {
     private int pageSize;
     private TreeMap<String, Integer> freqTable = new TreeMap<>();
     private ArrayList<URL> childLinks = new ArrayList<>();
+    private Vector<String> words; // does not store into DB, delete before putting into db
 
     public DocumentRecord(URL url) {
         this.url = url;
@@ -69,6 +68,31 @@ public class DocumentRecord implements Serializable {
     public DocumentRecord setChildLinks(ArrayList<URL> childLinks) {
         this.childLinks = childLinks;
         return this;
+    }
+
+    public void setWords(Vector<String> words){
+        this.words = words;
+    }
+
+    private Vector<String> getWordsAndSetNull(){
+        Vector<String> words = this.words;
+        this.words = null;
+        return words;
+    }
+
+    public TreeMap<String, ArrayList<Integer>> getWordsWithLoc(){
+        Vector<String> words = this.getWordsAndSetNull();
+        TreeMap<String, ArrayList<Integer>> result = new TreeMap<>();
+        for (int i=0; i<words.size(); ++i){
+            ArrayList<Integer> locations = result.get(words.get(i));
+            if (locations == null)
+                locations = new ArrayList<>();
+            locations.add(i); // won't repeat as iterator i only appears once for each value
+            System.out.printf("Putting %s\n", words.get(i));
+            result.put(words.get(i), locations);
+        }
+
+        return result;
     }
 
     @Override

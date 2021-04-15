@@ -7,7 +7,7 @@ import org.rocksdb.RocksDBException;
 import java.io.IOException;
 import java.util.*;
 
-public class InvertedIndex extends RocksStringMap<TreeMap<Integer, Integer>> {
+public class InvertedIndex extends RocksStringMap<TreeMap<Integer, ArrayList<Integer>>> {
 
     private static final Map<String, InvertedIndex> instances = new HashMap<>();
 

@@ -7,12 +7,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.rocksdb.RocksDBException;
 import picocli.CommandLine;
+import sun.reflect.generics.tree.Tree;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Main {
@@ -69,6 +72,35 @@ public class Main {
 
                 // update forward index
                 forwardDatabase.put(currentKey, documentRecord);
+
+                // update inverted index with word location
+                TreeMap<String, ArrayList<Integer>> words = documentRecord.getWordsWithLoc();
+                for (Map.Entry<String, ArrayList<Integer>> word : words.entrySet()){
+                    String keyword = word.getKey();
+//                    System.out.printf("fuck: %s=%s\n", keyword, word.getValue());
+                    TreeMap<Integer, ArrayList<Integer>> data = invertedDatabase.get(keyword);
+//                    System.out.println("TREEMAP: " + data);
+                    // can be empty if keyword is not yet be in the inverted index table
+                    if (data == null)
+                        data = new TreeMap<>();
+                    data.put(currentKey, word.getValue());
+                    invertedDatabase.put(keyword, data);
+
+                    // test
+                    TreeMap<Integer, ArrayList<Integer>> testData = invertedDatabase.get(keyword);
+                    System.out.printf("------------------testData---------------- \n");
+                    System.out.println("keyword: " + keyword);
+                    for (Map.Entry<Integer, ArrayList<Integer>> item : testData.entrySet()){
+                        System.out.printf("\tdocid: %s\n", item.getKey());
+
+                        System.out.println(item.getValue().getClass());
+                        System.out.printf("\t\t");
+                        for (Integer loc : item.getValue()){
+                            System.out.printf("%d, ", loc);
+                        }
+                        System.out.println("");
+                    }
+                    System.out.println("\n------------------testData---------------- \n");
 
                 // batch inverted index updates
                 for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {
