@@ -49,7 +49,7 @@ public class Main {
             int recordModified = 0;
 
             // store inverted index updates in memory first
-            Map<String, TreeMap<Integer, Integer>> invertedIndexUpdates = new HashMap<>();
+            Map<String, TreeMap<Integer, ArrayList<Integer>>> invertedIndexUpdates = new HashMap<>();
 
             for (DocumentRecord documentRecord : documentRecordList) {
                 Integer urlKey = urlDatabase.get(documentRecord.getUrl().toString());
@@ -73,16 +73,11 @@ public class Main {
                 // update forward index
                 forwardDatabase.put(currentKey, documentRecord);
 
-                // update inverted index with word location
+                // batch update inverted index with word location
                 TreeMap<String, ArrayList<Integer>> words = documentRecord.getWordsWithLoc();
-                for (Map.Entry<String, ArrayList<Integer>> word : words.entrySet()){
+                for (Map.Entry<String, ArrayList<Integer>> word : words.entrySet()) {
                     String keyword = word.getKey();
-//                    System.out.printf("fuck: %s=%s\n", keyword, word.getValue());
-                    TreeMap<Integer, ArrayList<Integer>> data = invertedDatabase.get(keyword);
-//                    System.out.println("TREEMAP: " + data);
-                    // can be empty if keyword is not yet be in the inverted index table
-                    if (data == null)
-                        data = new TreeMap<>();
+                    TreeMap<Integer, ArrayList<Integer>> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
                     data.put(currentKey, word.getValue());
                     invertedDatabase.put(keyword, data);
 
@@ -90,25 +85,25 @@ public class Main {
                     TreeMap<Integer, ArrayList<Integer>> testData = invertedDatabase.get(keyword);
                     System.out.printf("------------------testData---------------- \n");
                     System.out.println("keyword: " + keyword);
-                    for (Map.Entry<Integer, ArrayList<Integer>> item : testData.entrySet()){
+                    for (Map.Entry<Integer, ArrayList<Integer>> item : testData.entrySet()) {
                         System.out.printf("\tdocid: %s\n", item.getKey());
 
                         System.out.println(item.getValue().getClass());
                         System.out.printf("\t\t");
-                        for (Integer loc : item.getValue()){
+                        for (Integer loc : item.getValue()) {
                             System.out.printf("%d, ", loc);
                         }
                         System.out.println("");
                     }
                     System.out.println("\n------------------testData---------------- \n");
-
-                // batch inverted index updates
-                for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {
-                    String keyword = item.getKey();
-                    TreeMap<Integer, Integer> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
-                    data.put(currentKey, item.getValue());
-                    invertedIndexUpdates.put(keyword, data);
                 }
+                // batch inverted index updates
+//                for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {
+//                    String keyword = item.getKey();
+//                    TreeMap<Integer, Integer> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
+//                    data.put(currentKey, item.getValue());
+//                    invertedIndexUpdates.put(keyword, data);
+//                }
             }
 
             System.out.println("Successfully inserted all records into Forward Index.");
@@ -116,8 +111,8 @@ public class Main {
             // update inverted index
             int invertedAdded = 0;
             int invertedModified = 0;
-            for (Map.Entry<String, TreeMap<Integer, Integer>> entry : invertedIndexUpdates.entrySet()) {
-                TreeMap<Integer, Integer> data = invertedDatabase.get(entry.getKey());
+            for (Map.Entry<String, TreeMap<Integer, ArrayList<Integer>>> entry : invertedIndexUpdates.entrySet()) {
+                TreeMap<Integer, ArrayList<Integer>> data = invertedDatabase.get(entry.getKey());
                 if (data != null) {
                     data.putAll(entry.getValue());
                     invertedDatabase.put(entry.getKey(), data);
