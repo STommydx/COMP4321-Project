@@ -44,6 +44,6 @@ test {
 
 javadoc {
     options {
-        links('https://docs.oracle.com/javase/8/docs/api/')
+        links('https://docs.oracle.com/javase/8/docs/api/', 'https://javadoc.io/static/org.rocksdb/rocksdbjni/6.16.4/')
     }
 }
