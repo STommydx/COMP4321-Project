@@ -35,14 +35,14 @@ public class InvertedIndex extends RocksStringMap<TreeMap<Integer, ArrayList<Int
     }
 
     public Set<Integer> getDocumentsFromWord(String word) throws RocksDBException, IOException, ClassNotFoundException {
-        Map<Integer, Integer> termFreq = get(word);
-        return termFreq != null ? termFreq.keySet() : new HashSet<>();
+        Map<Integer, ArrayList<Integer>> termLoc = get(word);
+        return termLoc != null ? termLoc.keySet() : new HashSet<>();
     }
 
     public double getIdf(String word) throws RocksDBException, IOException, ClassNotFoundException {
-        Map<Integer, Integer> termFreq = get(word);
-        if (termFreq == null) return 0.;
-        int docFreq = termFreq.values().stream().mapToInt(x -> x > 0 ? 1 : 0).sum();
+        Map<Integer, ArrayList<Integer>> termLoc = get(word);
+        if (termLoc == null) return 0.;
+        int docFreq = termLoc.values().stream().map(ArrayList::size).mapToInt(x -> x > 0 ? 1 : 0).sum();
         return Math.log(1.0 * numOfDocuments / docFreq) / Math.log(2.);
     }
 
