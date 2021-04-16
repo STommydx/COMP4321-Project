@@ -1,6 +1,5 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
-import hk.ust.cse.comp4321.proj1.ForwardIndex;
 import hk.ust.cse.comp4321.proj1.InvertedIndex;
 import org.rocksdb.RocksDBException;
 

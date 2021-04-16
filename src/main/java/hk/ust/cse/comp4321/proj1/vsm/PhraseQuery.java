@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PhraseQuery extends WordQuery{
+public class PhraseQuery extends WordQuery {
 
     private String phrase;
 
@@ -21,8 +21,9 @@ public class PhraseQuery extends WordQuery{
 
     /**
      * Return a set with ID of documents which contains the phrase consecutively
+     *
      * @param invertedIndex to get the document ID from a word
-     * @return Set of docID
+     * @return Set of docID, empty set if the phrase does not exist in any doc
      * @throws RocksDBException
      * @throws IOException
      * @throws ClassNotFoundException
@@ -31,14 +32,14 @@ public class PhraseQuery extends WordQuery{
     public Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         Set<Integer> intersectionSet = null;
         // take intersection of all sets containing docID
-        for (int i=0; i< listOfWords.size(); ++i){
-            if (i==0) // set it for the first one
+        for (int i = 0; i < listOfWords.size(); ++i) {
+            if (i == 0) // set it for the first one
                 intersectionSet = invertedIndex.getDocumentsFromWord(listOfWords.get(i));
             else //retainAll is "effectively an implementation for set intersection"
                 intersectionSet.retainAll(invertedIndex.getDocumentsFromWord(listOfWords.get(i)));
         }
 
-        if (intersectionSet == null) return null;
+        if (intersectionSet == null) intersectionSet = new HashSet<>();
 
         Set<Integer> docIDResultSet = new HashSet<>();
         for (Integer docID : intersectionSet) {
@@ -66,10 +67,10 @@ public class PhraseQuery extends WordQuery{
     }
 
 
-    private Set<Integer> filterConsecutiveOnly(Set<Integer> inputSet, Set<Integer> locSet){
+    private Set<Integer> filterConsecutiveOnly(Set<Integer> inputSet, Set<Integer> locSet) {
         return inputSet
                 .stream()
-                .map(x->x+1)
+                .map(x -> x + 1)
                 .filter(locSet::contains)
                 .collect(Collectors.toSet());
     }

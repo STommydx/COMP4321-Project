@@ -1,7 +1,6 @@
 package hk.ust.cse.comp4321.proj1;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.*;
 
@@ -70,19 +69,18 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
-    public void setWords(Vector<String> words){
-        wordPos= new TreeMap<>();
-        for (int i=0; i<words.size(); ++i){
+    public void setWords(Vector<String> words) {
+        wordPos = new TreeMap<>();
+        for (int i = 0; i < words.size(); ++i) {
             ArrayList<Integer> locations = wordPos.get(words.get(i));
             if (locations == null)
                 locations = new ArrayList<>();
             locations.add(i); // won't repeat as iterator i only appears once for each value
-            System.out.printf("Putting %s\n", words.get(i));
             wordPos.put(words.get(i), locations);
         }
     }
 
-    public TreeMap<String, ArrayList<Integer>> getWordsWithLoc(){
+    public TreeMap<String, ArrayList<Integer>> getWordsWithLoc() {
         return wordPos;
     }
 

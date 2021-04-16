@@ -59,7 +59,10 @@ public abstract class Query {
         List<WordQuery> wordQueryList = new ArrayList<>();
         for (String queryWord : query) {
             // TODO: parse as phase query if word is phrase
-            wordQueryList.add(new SimpleWordQuery(queryWord));
+            if (queryWord.contains(" "))
+                wordQueryList.add(new PhraseQuery(queryWord));
+            else
+                wordQueryList.add(new SimpleWordQuery(queryWord));
         }
         return new MultiWordQuery(wordQueryList);
     }
