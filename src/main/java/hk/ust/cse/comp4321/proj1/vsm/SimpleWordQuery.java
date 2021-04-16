@@ -1,5 +1,6 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
+import hk.ust.cse.comp4321.proj1.ForwardIndex;
 import hk.ust.cse.comp4321.proj1.InvertedIndex;
 import org.rocksdb.RocksDBException;
 
@@ -16,6 +17,14 @@ public class SimpleWordQuery extends WordQuery {
         this.word = word;
     }
 
+    /**
+     * Get all ID of documents that contains the word
+     * @param invertedIndex to get the document ID from a word
+     * @return Set of docID
+     * @throws RocksDBException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     @Override
     public Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         return invertedIndex.getDocumentsFromWord(word);

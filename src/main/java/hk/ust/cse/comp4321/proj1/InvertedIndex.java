@@ -6,6 +6,7 @@ import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class InvertedIndex extends RocksStringMap<TreeMap<Integer, ArrayList<Integer>>> {
 
@@ -44,6 +45,20 @@ public class InvertedIndex extends RocksStringMap<TreeMap<Integer, ArrayList<Int
         if (termLoc == null) return 0.;
         int docFreq = termLoc.values().stream().map(ArrayList::size).mapToInt(x -> x > 0 ? 1 : 0).sum();
         return Math.log(1.0 * numOfDocuments / docFreq) / Math.log(2.);
+    }
+
+    /**
+     * Return a set containing positions of the word in a document
+     * @param word the word in question
+     * @param docID the desired document
+     * @return Set of positions
+     * @throws RocksDBException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public Set<Integer> getWordPosFromDocuments(String word, Integer docID) throws RocksDBException, IOException, ClassNotFoundException {
+        TreeMap<Integer, ArrayList<Integer>> postings = this.get(word);
+        return postings != null ? new HashSet<>(postings.get(docID)) : new HashSet<>();
     }
 
 }

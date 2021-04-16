@@ -82,20 +82,20 @@ public class Main {
                     invertedDatabase.put(keyword, data);
 
                     // test
-                    TreeMap<Integer, ArrayList<Integer>> testData = invertedDatabase.get(keyword);
-                    System.out.printf("------------------testData---------------- \n");
-                    System.out.println("keyword: " + keyword);
-                    for (Map.Entry<Integer, ArrayList<Integer>> item : testData.entrySet()) {
-                        System.out.printf("\tdocid: %s\n", item.getKey());
-
-                        System.out.println(item.getValue().getClass());
-                        System.out.printf("\t\t");
-                        for (Integer loc : item.getValue()) {
-                            System.out.printf("%d, ", loc);
-                        }
-                        System.out.println("");
-                    }
-                    System.out.println("\n------------------testData---------------- \n");
+//                    TreeMap<Integer, ArrayList<Integer>> testData = invertedDatabase.get(keyword);
+//                    System.out.printf("------------------testData---------------- \n");
+//                    System.out.println("keyword: " + keyword);
+//                    for (Map.Entry<Integer, ArrayList<Integer>> item : testData.entrySet()) {
+//                        System.out.printf("\tdocid: %s\n", item.getKey());
+//
+//                        System.out.println(item.getValue().getClass());
+//                        System.out.printf("\t\t");
+//                        for (Integer loc : item.getValue()) {
+//                            System.out.printf("%d, ", loc);
+//                        }
+//                        System.out.println("");
+//                    }
+//                    System.out.println("\n------------------testData---------------- \n");
                 }
                 // batch inverted index updates
 //                for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {

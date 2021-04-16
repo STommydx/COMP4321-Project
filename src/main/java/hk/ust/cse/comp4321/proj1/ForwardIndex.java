@@ -9,6 +9,7 @@ import org.rocksdb.RocksDBException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 
