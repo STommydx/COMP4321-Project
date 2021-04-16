@@ -119,6 +119,3 @@ db/
 spider_result.txt
 tomcat/
 infer-out/
-
-# Ignore misc.xml as I use jdk15 with level set to java8
-.idea/misc.xml
