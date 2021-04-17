@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -174,6 +175,27 @@ public class Main {
 
     public static String query(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
         return query(queryString, forwardDbName, invertedDbName);
+    }
+
+    public static String suggest(@NotNull String queryString, String suggestDb) throws RocksDBException, IOException, ClassNotFoundException {
+        int spaceIdx = queryString.lastIndexOf(" ");
+        SuggestionIndex suggestionIndex = SuggestionIndex.getInstance(suggestDb);
+        if (spaceIdx == -1) {
+            List<String> suggestions = suggestionIndex.get(queryString);
+            if (suggestions == null) suggestions = new ArrayList<>();
+            return mapper.writeValueAsString(suggestions);
+        } else {
+            String prefix = queryString.substring(0, spaceIdx + 1);
+            String suffix = queryString.substring(spaceIdx + 1);
+            List<String> suggestions = suggestionIndex.get(suffix);
+            if (suggestions == null) suggestions = new ArrayList<>();
+            suggestions = suggestions.stream().map(x -> prefix + x).collect(Collectors.toList());
+            return mapper.writeValueAsString(suggestions);
+        }
+    }
+
+    public static String suggest(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
+        return suggest(queryString, suggestDbName);
     }
 
     public static class CommandOptions {
