@@ -38,7 +38,7 @@ public class Trie<T> {
         }
         Trie<T> childTrie = children.get(key.charAt(pos));
         if (childTrie == null) {
-            childTrie = new Trie<>(null, key.substring(pos + 1));
+            childTrie = new Trie<>(null, key.substring(0, pos + 1));
             children.put(key.charAt(pos), childTrie);
         }
         return childTrie.map(key, mappingFunction, pos + 1);
@@ -65,7 +65,7 @@ public class Trie<T> {
 
     public @Nullable T recursiveMerge(BiFunction<List<T>, T, T> mergeFunc, BiFunction<String, T, T> selfFunc) {
         List<T> resultList = children.values().stream()
-                .map(x -> recursiveMerge(mergeFunc, selfFunc))
+                .map(x -> x.recursiveMerge(mergeFunc, selfFunc))
                 .collect(Collectors.toList());
         resultList.add(selfFunc.apply(prefix, data));
         data = mergeFunc.apply(resultList, data);

@@ -41,7 +41,7 @@ public class SuggestionTrie extends Trie<SuggestionTrie.Node> {
     public void buildSuggestion(int maxSize) {
         recursiveMerge(
                 (children, self) -> new Node(
-                        self.documentFrequency,
+                        self == null ? 0 : self.documentFrequency,
                         children.stream()
                                 .flatMap(x -> x.suggestions.entrySet().stream())
                                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
@@ -50,7 +50,8 @@ public class SuggestionTrie extends Trie<SuggestionTrie.Node> {
                 ),
                 (key, node) -> {
                     Map<String, Integer> selfFreq = new HashMap<>();
-                    selfFreq.put(key, node.documentFrequency);
+                    if (node != null)
+                        selfFreq.put(key, node.documentFrequency);
                     return new Node(0, selfFreq);
                 }
         );
