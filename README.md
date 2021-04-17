@@ -6,30 +6,37 @@ The project is the course project for the HKUST COMP 4321 course. It is a web se
 
 ## Repository Structure
 
-(Outdated)
 
 Below shows the important files/folder of the project repository.
 
 ```
 ├── build                                      (Build Folder)
 │   └── libs
-│       └── COMP4321ProjectPhase1-1.0-all.jar  (Generated Jar)
+│       ├── COMP4321Project-1.0-all.jar        (Generated Jar)
+│       └── COMP4321Project-1.0.war            (Generated WAR)
 ├── build.gradle                               (Gradle Config)
-├── Database_Design_Document.pdf               (Design Document required in Phase 1 Project Spec)
-├── db                                         (Rocks DB Tables)
+├── db                                         (Rocks DB Tables, not included)
 │   ├── ForwardIndex
 │   ├── InvertedIndex
-│   └── LookupTable
-├── phase1.sh                                  (Convenient Script for running the project)
+│   ├── LookupTable
+│   └── SuggestIndex
+├── phase1.sh                                  (Convenient Script for running the CLI)
+├── phase2.sh                                  (Convenient Script for running the web server)
 ├── README.md                                  (This document)
-├── readme.txt                                 (readme.txt required in Phase 1 Project Spec)
-├── spider_result.txt                          (crawled result required in Phase 1 Project Spec)
-├── src                                        (Folder storing all source code)
+├── src
 │   └── main
-└── stopwords-en.txt                           (Stopword list used)
+│       ├── java                               (Java source files)
+│       ├── resources                          (Resource files such as stopword list)
+│       └── webapp                             (JSP source files)
+└── tomcat                                     (Folder storing Tomcat libraries)
 ```
 
 ## Installation Guide
+
+Please be noted that this part of the installation guide will only guide you through the process of installing the
+backend web server. Please refer to
+the [README.md](https://github.com/STommydx/COMP4321-Project-UI/blob/master/README.md) from the UI repository (folder)
+for instructions setting up the frontend UI.
 
 ### Prerequisite
 
@@ -37,7 +44,9 @@ Below shows the important files/folder of the project repository.
 
 The project runs with Java 8. It is recommended to have JDK 8 installed. Higher versions are not tested.
 
-Gradle is used for dependency management for this project. The gradle wrapper script will be able to detect your Java installation. Make sure the java binary directory is in `$PATH` and `$JAVA_HOME` is set to the Java installation directory.
+Gradle is used for dependency management for this project. The gradle wrapper script will be able to detect your Java
+installation. Make sure the java binary directory is in `$PATH` and `$JAVA_HOME` is set to the Java installation
+directory.
 
 #### Unix-like Environment
 
@@ -97,22 +106,35 @@ We provide a convenient script `phase1.sh` to run the program easily. The script
 ./phase1.sh
 ```
 
-You can see all of the options available by invoking the help option.
+You can see all the options available by invoking the help option.
 
 ```bash=
 ./phase1.sh --help
 ```
 
 ```
-Usage: <main class> [-chpV] [-f=<forwardDb>] [-o=<outputFile>] [-u=<crawlUrl>]
-  -c, --crawl            Crawl the web to update database document records
+Usage: <main class> [-chp] [--query-interactive] [-d=<crawlDepth>]
+                    [-f=<forwardDb>] [-i=<invertedDb>] [-l=<lookupDb>]
+                    [-n=<crawlPages>] [-o=<outputFile>] [-q=<queryString>]
+                    [-u=<crawlUrl>]
+  -c, --crawl                Crawl the web to update database document records
+  -d, --depth=<crawlDepth>   The maximum recursive depth when crawling the pages
   -f, --forward-index=<forwardDb>
-                         The database name of the forward index
-  -h, --help             Display this help message
-  -o, --output=<outputFile>
-                         The file to print for printing database records
-  -p, --print            Printing database forward index to file
-  -u, --url=<crawlUrl>   The root URL to crawl
+                             The database name of the forward index
+  -h, --help                 Display this help message
+  -i, --inverted-index=<invertedDb>
+                             The database name of the inverted index
+  -l, --lookup-table=<lookupDb>
+                             The database name of the url to id lookup table
+  -n, --num-docs=<crawlPages>
+                             The maximum number of documents that should be
+                               crawled
+  -o, --output=<outputFile>  The file to print for printing database records
+  -p, --print                Printing database forward index to file
+  -q, --query=<queryString>  The query term for query
+      --query-interactive    Interactive query mode: input query from standard
+                               input
+  -u, --url=<crawlUrl>       The root URL to crawl
 ```
 
 #### Crawler
@@ -176,22 +198,37 @@ In case you prefer a docker setup, we provide a docker compose configuration fil
 To build the docker image needed, run the following:
 
 ```bash=
-docker-compose build
+docker-compose build web
 ```
 
 To start the deployment, run the following:
 
 ```bash=
-docker-compose up -d
+docker-compose up -d web
 ```
 
 You may want to change the listen port in `docker-compose.yml`. The default port is `3000`.
 
 #### Manual Deploying
 
-The WAR file is located at `build/libs/COMP4321Project-1.0.war` after runing the `war` Gradle task. You may follow the instruction of your web server distribution for deploying a WAR application.
+The WAR file is located at `build/libs/COMP4321Project-1.0.war` after running the `war` Gradle task. You may follow the
+instruction of your web server distribution for deploying a WAR application.
 
-For Tomcat, copy the generated WAR file to `$CATALINA_HOME/webapps/` to deploy the application. You may refer to the official [documentation](https://tomcat.apache.org/tomcat-10.0-doc/deployer-howto.html) for details.
+For Tomcat, copy the generated WAR file to `$CATALINA_HOME/webapps/` to deploy the application. You may refer to the
+official [documentation](https://tomcat.apache.org/tomcat-10.0-doc/deployer-howto.html) for details.
+
+### Deploying the UI
+
+We recommend using docker compose for staring up the whole search engine stack instead of installing it separately. The
+UI folder should be located at `../comp4321-proj-ui`. You may also configure the path in `docker-compose.yml`.
+
+```bash=
+docker-compose build
+docker-compose up -d
+```
+
+Please refer to the [README.md](https://github.com/STommydx/COMP4321-Project-UI/blob/master/README.md) in the UI
+repository (folder) for detailed installation instructions (including non-Docker setups).
 
 ## Contribution Guidelines
 
