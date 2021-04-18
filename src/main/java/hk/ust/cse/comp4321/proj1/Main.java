@@ -76,7 +76,7 @@ public class Main {
                     String keyword = word.getKey();
                     TreeMap<Integer, ArrayList<Integer>> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
                     data.put(currentKey, word.getValue());
-                    invertedDatabase.put(keyword, data);
+                    invertedIndexUpdates.put(keyword, data);
                 }
             }
 
@@ -170,7 +170,7 @@ public class Main {
 
         @CommandLine.Option(names = {"-q", "--query"}, description = "The query term for query")
         @Nullable String queryString = null;
-        @CommandLine.Option(names = "--query-interactive", description = "Interactive query mode: input query from standard input")
+        @CommandLine.Option(names = {"-Q", "--query-interactive"}, description = "Interactive query mode: input query from standard input")
         boolean interactiveQuery = false;
 
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")

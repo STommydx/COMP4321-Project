@@ -1,5 +1,7 @@
 package hk.ust.cse.comp4321.proj1;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
@@ -80,6 +82,7 @@ public class DocumentRecord implements Serializable {
         }
     }
 
+    @JsonIgnore
     public TreeMap<String, ArrayList<Integer>> getWordsWithLoc() {
         return wordPos;
     }

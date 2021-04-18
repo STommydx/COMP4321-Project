@@ -41,21 +41,44 @@ public class PhraseQuery extends WordQuery {
 
         if (intersectionSet == null) intersectionSet = new HashSet<>();
 
-        Set<Integer> docIDResultSet = new HashSet<>();
-        for (Integer docID : intersectionSet) {
-            Set<Integer> resultSet = new HashSet<>();
-            for (String listOfWord : listOfWords) {
-                Set<Integer> locSet = invertedIndex.getWordPosFromDocuments(listOfWord, docID);
-                if (resultSet.isEmpty()) {
-                    resultSet.addAll(locSet);
-                } else {
-                    resultSet = filterConsecutiveOnly(resultSet, locSet);
+        Map<Integer, ArrayList<Integer>> oldPosting = null;
+        for (String word : listOfWords) {
+            Map<Integer, ArrayList<Integer>> postingList = invertedIndex.get(word);
+
+            // if this word is not in invertedIndex
+            if (postingList == null)
+                return new HashSet<>();
+
+            // run this if it is the 0th iteration
+            if (oldPosting == null) {
+                oldPosting = postingList;
+                continue;
+            }
+
+            Set<Integer> newIntersectionSet = new HashSet<>();
+            Map<Integer, ArrayList<Integer>> nextPostingList = new HashMap<>();
+            for (Integer docID : intersectionSet) {
+                ArrayList<Integer> oldPosList = oldPosting.get(docID);
+                ArrayList<Integer> posList = postingList.get(docID);
+                ArrayList<Integer> nextPosList = new ArrayList<>();
+
+                for (Integer pos : oldPosList) {
+                    if (posList.contains(pos + 1)) {
+                        nextPosList.add(pos + 1);
+                    }
+                }
+                if (!nextPosList.isEmpty()) {
+                    newIntersectionSet.add(docID); // this docID contains the sequence
+                    nextPostingList.put(docID, nextPosList);
                 }
             }
-            if (!resultSet.isEmpty())
-                docIDResultSet.add(docID);
+
+            // Update set and map for next (word) iteration
+            intersectionSet = newIntersectionSet;
+            oldPosting = nextPostingList;
         }
-        return docIDResultSet;
+
+        return intersectionSet;
     }
 
     @Override
