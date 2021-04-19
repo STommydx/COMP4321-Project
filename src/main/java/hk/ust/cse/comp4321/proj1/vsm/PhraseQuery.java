@@ -97,4 +97,9 @@ public class PhraseQuery extends WordQuery {
                 .filter(locSet::contains)
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public String toString(){
+        return "\"" + phrase + "\"";
+    }
 }

@@ -20,7 +20,7 @@ public class QueryUtils {
         for (char c : query.toCharArray()) {
             if (c == '"') {
                 shouldEscape = !shouldEscape;
-            } else if (c == ' ') {
+            } else if (c == ' ' && !shouldEscape) {
                 if (buffer.length() > 0)
                     tokenizedQuery.add(buffer.toString());
                 buffer = new StringBuilder();
