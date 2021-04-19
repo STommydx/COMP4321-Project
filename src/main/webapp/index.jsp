@@ -1,9 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
-    <title>Title</title>
+    <title>HKUST CSE Search</title>
 </head>
 <body>
-CSE Search!
+<form action="${pageContext.request.contextPath}/search.jsp" method="get">
+    <input type="text" name="q">
+    <input type="submit" value="Submit">
+</form>
 </body>
 </html>

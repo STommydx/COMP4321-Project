@@ -135,14 +135,22 @@ public class Main {
         }
     }
 
-    public static String query(@NotNull String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
+    public static List<QueryResultEntry> queryRaw(@NotNull String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
         Query query = Query.parse(queryString);
         ForwardIndex forwardIndex = ForwardIndex.getInstance(forwardDb);
         InvertedIndex invertedIndex = InvertedIndex.getInstance(invertedDb);
         invertedIndex.setNumOfDocuments(forwardIndex.getNextID());  // hacky way to get approx. no of documents
         List<Map.Entry<Integer, Double>> rawResult = query.query(forwardIndex, invertedIndex);
-        List<QueryResultEntry> result = QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50);
-        return mapper.writeValueAsString(result);
+        return QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50);
+    }
+
+    public static List<QueryResultEntry> queryRaw(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
+        return queryRaw(queryString, forwardDbName, invertedDbName);
+    }
+
+    public static String query(@NotNull String queryString, String forwardDb, String invertedDb) throws RocksDBException, IOException, ClassNotFoundException {
+        List<QueryResultEntry> resultEntries = queryRaw(queryString, forwardDb, invertedDb);
+        return mapper.writeValueAsString(resultEntries);
     }
 
     public static String query(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
