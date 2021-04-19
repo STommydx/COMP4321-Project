@@ -1,18 +1,16 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
-import hk.ust.cse.comp4321.proj1.ForwardIndex;
 import hk.ust.cse.comp4321.proj1.InvertedIndex;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PhraseQuery extends WordQuery {
 
-    private String phrase;
+    private final String phrase;
 
-    private List<String> listOfWords;
+    private final List<String> listOfWords;
 
     public PhraseQuery(String phrase) {
         this.phrase = phrase;
@@ -45,7 +43,7 @@ public class PhraseQuery extends WordQuery {
         for (String word : listOfWords) {
             Map<Integer, ArrayList<Integer>> postingList = invertedIndex.get(word);
 
-            // if this word is not in invertedIndex
+            // if one of the words is not in invertedIndex
             if (postingList == null)
                 return new HashSet<>();
 
@@ -89,17 +87,8 @@ public class PhraseQuery extends WordQuery {
         return queryVector;
     }
 
-
-    private Set<Integer> filterConsecutiveOnly(Set<Integer> inputSet, Set<Integer> locSet) {
-        return inputSet
-                .stream()
-                .map(x -> x + 1)
-                .filter(locSet::contains)
-                .collect(Collectors.toSet());
-    }
-
     @Override
-    public String toString(){
+    public String toString() {
         return "\"" + phrase + "\"";
     }
 }
