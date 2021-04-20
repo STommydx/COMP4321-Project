@@ -1,11 +1,10 @@
 package hk.ust.cse.comp4321.proj1;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class DocumentRecord implements Serializable {
 
@@ -17,6 +16,7 @@ public class DocumentRecord implements Serializable {
     private int pageSize;
     private TreeMap<String, Integer> freqTable = new TreeMap<>();
     private ArrayList<URL> childLinks = new ArrayList<>();
+    private TreeMap<String, ArrayList<Integer>> wordPos;
 
     public DocumentRecord(URL url) {
         this.url = url;
@@ -69,6 +69,22 @@ public class DocumentRecord implements Serializable {
     public DocumentRecord setChildLinks(ArrayList<URL> childLinks) {
         this.childLinks = childLinks;
         return this;
+    }
+
+    public void setWords(Vector<String> words) {
+        wordPos = new TreeMap<>();
+        for (int i = 0; i < words.size(); ++i) {
+            ArrayList<Integer> locations = wordPos.get(words.get(i));
+            if (locations == null)
+                locations = new ArrayList<>();
+            locations.add(i); // won't repeat as iterator i only appears once for each value
+            wordPos.put(words.get(i), locations);
+        }
+    }
+
+    @JsonIgnore
+    public TreeMap<String, ArrayList<Integer>> getWordsWithLoc() {
+        return wordPos;
     }
 
     @Override

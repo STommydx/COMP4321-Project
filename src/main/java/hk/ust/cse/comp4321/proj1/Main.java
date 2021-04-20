@@ -46,7 +46,7 @@ public class Main {
             int recordModified = 0;
 
             // store inverted index updates in memory first
-            Map<String, TreeMap<Integer, Integer>> invertedIndexUpdates = new HashMap<>();
+            Map<String, TreeMap<Integer, ArrayList<Integer>>> invertedIndexUpdates = new HashMap<>();
 
             for (DocumentRecord documentRecord : documentRecordList) {
                 Integer urlKey = urlDatabase.get(documentRecord.getUrl().toString());
@@ -70,11 +70,12 @@ public class Main {
                 // update forward index
                 forwardDatabase.put(currentKey, documentRecord);
 
-                // batch inverted index updates
-                for (Map.Entry<String, Integer> item : documentRecord.getFreqTable().entrySet()) {
-                    String keyword = item.getKey();
-                    TreeMap<Integer, Integer> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
-                    data.put(currentKey, item.getValue());
+                // batch update inverted index with word location
+                TreeMap<String, ArrayList<Integer>> words = documentRecord.getWordsWithLoc();
+                for (Map.Entry<String, ArrayList<Integer>> word : words.entrySet()) {
+                    String keyword = word.getKey();
+                    TreeMap<Integer, ArrayList<Integer>> data = invertedIndexUpdates.getOrDefault(keyword, new TreeMap<>());
+                    data.put(currentKey, word.getValue());
                     invertedIndexUpdates.put(keyword, data);
                 }
             }
@@ -84,8 +85,8 @@ public class Main {
             // update inverted index
             int invertedAdded = 0;
             int invertedModified = 0;
-            for (Map.Entry<String, TreeMap<Integer, Integer>> entry : invertedIndexUpdates.entrySet()) {
-                TreeMap<Integer, Integer> data = invertedDatabase.get(entry.getKey());
+            for (Map.Entry<String, TreeMap<Integer, ArrayList<Integer>>> entry : invertedIndexUpdates.entrySet()) {
+                TreeMap<Integer, ArrayList<Integer>> data = invertedDatabase.get(entry.getKey());
                 if (data != null) {
                     data.putAll(entry.getValue());
                     invertedDatabase.put(entry.getKey(), data);
@@ -169,7 +170,7 @@ public class Main {
 
         @CommandLine.Option(names = {"-q", "--query"}, description = "The query term for query")
         @Nullable String queryString = null;
-        @CommandLine.Option(names = "--query-interactive", description = "Interactive query mode: input query from standard input")
+        @CommandLine.Option(names = {"-Q", "--query-interactive"}, description = "Interactive query mode: input query from standard input")
         boolean interactiveQuery = false;
 
         @CommandLine.Option(names = {"-f", "--forward-index"}, description = "The database name of the forward index")

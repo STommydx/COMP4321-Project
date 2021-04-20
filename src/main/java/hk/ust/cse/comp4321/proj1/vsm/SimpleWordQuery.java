@@ -16,6 +16,14 @@ public class SimpleWordQuery extends WordQuery {
         this.word = word;
     }
 
+    /**
+     * Get all ID of documents that contains the word
+     * @param invertedIndex an InvertedIndex instance
+     * @return Set of docID
+     * @throws RocksDBException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     @Override
     public Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         return invertedIndex.getDocumentsFromWord(word);

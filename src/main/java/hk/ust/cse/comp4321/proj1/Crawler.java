@@ -95,10 +95,9 @@ public class Crawler {
     public void crawlLoop() {
         while (!todos.isEmpty()) {
             Link focus = todos.remove(0);
-            // feel free to change the depth limit of the spider.
             if (focus.level > maxDepth) break; // stop criteria
             if (urls.contains(focus.url)) continue;   // ignore pages that has been visited
-            if (counter >= maxPages) {  // stop when number of pages exceed the constant
+            if (counter >= maxPages) {  // stop when number of pages checked out exceed the constant
                 break;
             } else {
                 counter++;
@@ -146,8 +145,9 @@ public class Crawler {
 
                 // count keywords
                 TreeMap<String, Integer> freqTable = new TreeMap<>();
-                for (String item : words)
+                for (String item : words) {
                     freqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
+                }
 
                 // Calling document record to serialise the retrieved data
                 DocumentRecord documentRecord = new DocumentRecord(focus.url);
@@ -156,6 +156,7 @@ public class Crawler {
                 documentRecord.setFreqTable(freqTable);
                 documentRecord.setPageSize(size);
                 documentRecord.setChildLinks(linksList);
+                documentRecord.setWords(words);
 
                 documentRecords.add(documentRecord);
 
