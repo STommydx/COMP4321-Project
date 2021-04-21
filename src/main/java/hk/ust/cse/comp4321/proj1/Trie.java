@@ -63,6 +63,16 @@ public class Trie<T> {
         });
     }
 
+    /**
+     * This method recursively runs at every children tries. At the deepest/lowest level of recursion at
+     * the "leaf" trie(s), it maps the prefix of <code>String</code> type and data of <code>T</code> type of the "leaf"
+     * trie to a <code>T</code> type object with function defined by {@code selfFunc} and stores it in a List. Then, the
+     * List and data of the "leaf" trie are mapped with functional interface {@code mergeFunc} to data of the trie, and
+     * get returned.
+     * @param mergeFunc merge functional interface merging list of children data with this data
+     * @param selfFunc refer to {@link SuggestionTrie#buildSuggestion buildSuggestion} to get a better understand of this parameter
+     * @return merged data
+     */
     public @Nullable T recursiveMerge(BiFunction<List<T>, T, T> mergeFunc, BiFunction<String, T, T> selfFunc) {
         List<T> resultList = children.values().stream()
                 .map(x -> x.recursiveMerge(mergeFunc, selfFunc))

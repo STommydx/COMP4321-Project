@@ -106,7 +106,7 @@ public class Main {
             if (suggestDb != null) {
                 System.out.println("Building suggestion index...");
                 SuggestionTrie suggestionTrie = new SuggestionTrie();
-                for (Map.Entry<String, TreeMap<Integer, Integer>> entry : invertedIndexUpdates.entrySet()) {
+                for (Map.Entry<String, TreeMap<Integer, ArrayList<Integer>>> entry : invertedIndexUpdates.entrySet()) {
                     suggestionTrie.put(entry.getKey(), entry.getValue().size());
                 }
                 suggestionTrie.buildSuggestion(20);
