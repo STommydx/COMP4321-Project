@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
@@ -21,13 +22,14 @@ public class Main {
     private static final String forwardDbName = getValueOrDefault(System.getenv("SE_DB_FORWARD_INDEX"), "ForwardIndex");
     private static final String invertedDbName = getValueOrDefault(System.getenv("SE_DB_INVERTED_INDEX"), "InvertedIndex");
     private static final String lookupDbName = getValueOrDefault(System.getenv("SE_DB_LOOKUP_TABLE"), "LookupTable");
+    private static final String suggestDbName = getValueOrDefault(System.getenv("SE_DB_SUGGEST_INDEX"), "SuggestIndex");
 
     @NotNull
     public static <T> T getValueOrDefault(@Nullable T value, T defaultValue) {
         return value == null ? defaultValue : value;
     }
 
-    public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, int crawlPages, int crawlDepth) {
+    public static void crawl(URL crawlUrl, String forwardDb, String invertedDb, String lookupDb, String suggestDb, int crawlPages, int crawlDepth) {
         Crawler crawler = new Crawler(crawlUrl, crawlPages, crawlDepth);
         System.out.println("Crawler now crawling from root URL " + crawlUrl.toString() + "...");
         crawler.crawlLoop();
@@ -100,6 +102,23 @@ public class Main {
             System.out.println("Successfully inserted all records into RocksDB.");
             System.out.println("Forward Index: " + recordAdded + " added. " + recordModified + " modified.");
             System.out.println("Inverted Index: " + invertedAdded + " added. " + invertedModified + " modified.");
+
+            if (suggestDb != null) {
+                System.out.println("Building suggestion index...");
+                SuggestionTrie suggestionTrie = new SuggestionTrie();
+                for (Map.Entry<String, TreeMap<Integer, ArrayList<Integer>>> entry : invertedIndexUpdates.entrySet()) {
+                    suggestionTrie.put(entry.getKey(), entry.getValue().size());
+                }
+                suggestionTrie.buildSuggestion(20);
+                Map<String, SuggestionTrie.Node> res = suggestionTrie.getAll();
+                SuggestionIndex suggestionIndex = SuggestionIndex.getInstance(suggestDb);
+                for (Map.Entry<String, SuggestionTrie.Node> entry : res.entrySet()) {
+                    String k = entry.getKey();
+                    SuggestionTrie.Node v = entry.getValue();
+                    suggestionIndex.put(k, new ArrayList<>(v.getSuggestions().keySet()));
+                }
+                System.out.println("Successfully built suggestion index.");
+            }
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -158,6 +177,27 @@ public class Main {
         return query(queryString, forwardDbName, invertedDbName);
     }
 
+    public static String suggest(@NotNull String queryString, String suggestDb) throws RocksDBException, IOException, ClassNotFoundException {
+        int spaceIdx = queryString.lastIndexOf(" ");
+        SuggestionIndex suggestionIndex = SuggestionIndex.getInstance(suggestDb);
+        if (spaceIdx == -1) {
+            List<String> suggestions = suggestionIndex.get(queryString);
+            if (suggestions == null) suggestions = new ArrayList<>();
+            return mapper.writeValueAsString(suggestions);
+        } else {
+            String prefix = queryString.substring(0, spaceIdx + 1);
+            String suffix = queryString.substring(spaceIdx + 1);
+            List<String> suggestions = suggestionIndex.get(suffix);
+            if (suggestions == null) suggestions = new ArrayList<>();
+            suggestions = suggestions.stream().map(x -> prefix + x).collect(Collectors.toList());
+            return mapper.writeValueAsString(suggestions);
+        }
+    }
+
+    public static String suggest(@NotNull String queryString) throws RocksDBException, IOException, ClassNotFoundException {
+        return suggest(queryString, suggestDbName);
+    }
+
     public static class CommandOptions {
         @CommandLine.Option(names = {"-c", "--crawl"}, description = "Crawl the web to update database document records")
         boolean shouldCrawl = false;
@@ -179,6 +219,8 @@ public class Main {
         String invertedDb = invertedDbName;
         @CommandLine.Option(names = {"-l", "--lookup-table"}, description = "The database name of the url to id lookup table")
         String lookupDb = lookupDbName;
+        @CommandLine.Option(names = {"-s", "--suggestion-index"}, description = "The database name of the suggestion index")
+        String suggestDb = suggestDbName;
 
         @CommandLine.Option(names = {"-p", "--print"}, description = "Printing database forward index to file")
         boolean shouldPrintRecords = false;
@@ -203,7 +245,8 @@ public class Main {
             try {
                 URL crawlURL = new URL(commandOptions.crawlUrl);
                 crawl(crawlURL, commandOptions.forwardDb, commandOptions.invertedDb,
-                        commandOptions.lookupDb, commandOptions.crawlPages, commandOptions.crawlDepth);
+                        commandOptions.lookupDb, commandOptions.suggestDb, commandOptions.crawlPages,
+                        commandOptions.crawlDepth);
             } catch (MalformedURLException e) {
                 System.out.println("The URL provided (" + commandOptions.crawlUrl + ") is not a valid URL.");
             }
