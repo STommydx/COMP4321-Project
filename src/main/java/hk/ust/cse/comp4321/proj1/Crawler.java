@@ -149,14 +149,22 @@ public class Crawler {
                     freqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
                 }
 
+                // count title as keywords with higher weight,
+                String title = res.parse().title();
+                Vector<String> tokenisedTitle = CrawlUtils.extractTitleWords(title);
+                for (String item : tokenisedTitle) {
+                    freqTable.put(item, freqTable.getOrDefault(item, 0) + 5);
+                }
+
                 // Calling document record to serialise the retrieved data
                 DocumentRecord documentRecord = new DocumentRecord(focus.url);
-                documentRecord.setTitle(res.parse().title());
+                documentRecord.setTitle(title);
                 documentRecord.setLastModificationDate(new Date(lastModified));
                 documentRecord.setFreqTable(freqTable);
                 documentRecord.setPageSize(size);
                 documentRecord.setChildLinks(linksList);
                 documentRecord.setWords(words);
+                documentRecord.setTitleWords(tokenisedTitle);
 
                 documentRecords.add(documentRecord);
 

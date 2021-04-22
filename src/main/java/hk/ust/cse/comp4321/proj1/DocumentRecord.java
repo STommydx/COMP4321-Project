@@ -16,7 +16,8 @@ public class DocumentRecord implements Serializable {
     private int pageSize;
     private TreeMap<String, Integer> freqTable = new TreeMap<>();
     private ArrayList<URL> childLinks = new ArrayList<>();
-    private TreeMap<String, ArrayList<Integer>> wordPos;
+    private TreeMap<String, ArrayList<Integer>> wordPos = new TreeMap<>();
+    private ArrayList<URL> parentLinks = new ArrayList<>();
 
     public DocumentRecord(URL url) {
         this.url = url;
@@ -71,13 +72,32 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
+    public DocumentRecord setParentLinks(ArrayList<URL> parentLinks) {
+        this.parentLinks = parentLinks;
+        return this;
+    }
+
     public void setWords(Vector<String> words) {
-        wordPos = new TreeMap<>();
+        setWordPos(words, 0, 1);
+    }
+
+
+    public void setTitleWords(Vector<String> title) {
+        setWordPos(title, -1, -1);
+    }
+
+    /**
+     * Takes the word in {@code words} and store their location in the document.
+     * Location is calculated as (i + {@code initial}) * {@code stepping}, where i is the position in {@code words}
+     *
+     * @param words    {Vector<String>}
+     * @param initial  {int} the initial value for the 0-th word in {@param words}
+     * @param stepping {int} value of increment of location going down {@param words}
+     */
+    private void setWordPos(Vector<String> words, int initial, int stepping) {
         for (int i = 0; i < words.size(); ++i) {
-            ArrayList<Integer> locations = wordPos.get(words.get(i));
-            if (locations == null)
-                locations = new ArrayList<>();
-            locations.add(i); // won't repeat as iterator i only appears once for each value
+            ArrayList<Integer> locations = wordPos.getOrDefault(words.get(i), new ArrayList<>());
+            locations.add((i + initial) * stepping); // won't repeat as iterator i only appears once for each value
             wordPos.put(words.get(i), locations);
         }
     }
