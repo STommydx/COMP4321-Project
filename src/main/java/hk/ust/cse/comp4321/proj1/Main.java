@@ -50,6 +50,23 @@ public class Main {
             // store inverted index updates in memory first
             Map<String, TreeMap<Integer, ArrayList<Integer>>> invertedIndexUpdates = new HashMap<>();
 
+            System.out.println("Putting parent links into document records...");
+            // TODO concurrencyError
+            Map<URL, Integer> memoryLookUpTable =  documentRecordList.stream().collect(Collectors.
+                    toMap(x->x.getUrl(), x->1));
+//            Map<URL, Integer> memoryLookUpTable = new HashMap<>();
+
+            for (DocumentRecord documentRecord : documentRecordList) {
+                List<URL> childLinks = documentRecord.getChildLinks();
+                for (URL link : childLinks) {
+                    Integer drID = memoryLookUpTable.get(link);
+                    if (drID == null) continue;
+                    documentRecordList.add(documentRecordList.get(drID).addParentLinks(link));
+                }
+            }
+
+            System.out.println("Parent links put into document records successfully");
+
             for (DocumentRecord documentRecord : documentRecordList) {
                 Integer urlKey = urlDatabase.get(documentRecord.getUrl().toString());
                 Integer currentKey;

@@ -72,8 +72,8 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
-    public DocumentRecord setParentLinks(ArrayList<URL> parentLinks) {
-        this.parentLinks = parentLinks;
+    public DocumentRecord addParentLinks(URL parentLink) {
+        this.parentLinks.add(parentLink);
         return this;
     }
 
