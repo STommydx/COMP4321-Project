@@ -17,8 +17,8 @@ public class DocumentRecord implements Serializable {
     private TreeMap<String, Integer> freqTable = new TreeMap<>();
     private TreeMap<String, Integer> titleFreqTable = new TreeMap<>();
     private ArrayList<URL> childLinks = new ArrayList<>();
-    private TreeMap<String, ArrayList<Integer>> wordPos = new TreeMap<>();
-    private ArrayList<URL> parentLinks = new ArrayList<>();
+    private final TreeMap<String, ArrayList<Integer>> wordPos = new TreeMap<>();
+    private final HashSet<URL> parentLinks = new HashSet<>();
 
     public DocumentRecord(URL url) {
         this.url = url;
@@ -83,13 +83,12 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
-    public DocumentRecord addParentLinks(URL parentLink) {
+    public void addParentLinks(URL parentLink) {
         this.parentLinks.add(parentLink);
-        return this;
     }
 
     public ArrayList<URL> getParentLinks() {
-        return parentLinks;
+        return new ArrayList<>(parentLinks);
     }
 
     public DocumentRecord setWords(Vector<String> words) {
