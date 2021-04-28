@@ -152,9 +152,14 @@ public class Crawler {
                 // count title as keywords with higher weight,
                 String title = res.parse().title();
                 TreeMap<String, Integer> titleFreqTable = new TreeMap<>();
-                Vector<String> tokenisedTitle = CrawlUtils.extractTitleWords(title);
+                Vector<String> tokenisedTitle = CrawlUtils.extractTitleWords(title).stream()
+                        .filter(NLPUtils::isAlphaNumeric)
+                        .filter(NLPUtils::stopwordFilter)
+                        .map(NLPUtils::stemFilter)
+                        .collect(Collectors.toCollection(Vector::new));
+
                 for (String item : tokenisedTitle) {
-                    titleFreqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
+                    titleFreqTable.put(item, titleFreqTable.getOrDefault(item, 0) + 1);
                 }
 
                 // Calling document record to serialise the retrieved data

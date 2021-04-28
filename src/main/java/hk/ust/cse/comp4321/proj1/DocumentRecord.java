@@ -88,6 +88,10 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
+    public ArrayList<URL> getParentLinks() {
+        return parentLinks;
+    }
+
     public DocumentRecord setWords(Vector<String> words) {
         setWordPos(words, 0, 1);
         return this;

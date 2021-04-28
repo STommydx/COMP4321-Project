@@ -59,7 +59,7 @@ public class Main {
                 for (URL link : childLinks) {
                     DocumentRecord dr = memoryLookUpTable.get(link);
                     if (dr == null) continue;
-                    dr.addParentLinks(link);
+                    dr.addParentLinks(documentRecord.getUrl());
                 }
             }
 
