@@ -15,6 +15,7 @@ public class DocumentRecord implements Serializable {
     private Date lastModificationDate = new Date();
     private int pageSize;
     private TreeMap<String, Integer> freqTable = new TreeMap<>();
+    private TreeMap<String, Integer> titleFreqTable = new TreeMap<>();
     private ArrayList<URL> childLinks = new ArrayList<>();
     private TreeMap<String, ArrayList<Integer>> wordPos = new TreeMap<>();
     private ArrayList<URL> parentLinks = new ArrayList<>();
@@ -58,8 +59,18 @@ public class DocumentRecord implements Serializable {
         return freqTable;
     }
 
+    public TreeMap<String, Integer> getTitleFreqTable() {
+        return titleFreqTable;
+    }
+
     public DocumentRecord setFreqTable(TreeMap<String, Integer> freqTable) {
         this.freqTable = freqTable;
+        return this;
+    }
+
+
+    public DocumentRecord setTitleFreqTable(TreeMap<String, Integer> freqTable) {
+        this.titleFreqTable = freqTable;
         return this;
     }
 
@@ -77,13 +88,15 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
-    public void setWords(Vector<String> words) {
+    public DocumentRecord setWords(Vector<String> words) {
         setWordPos(words, 0, 1);
+        return this;
     }
 
 
-    public void setTitleWords(Vector<String> title) {
+    public DocumentRecord setTitleWords(Vector<String> title) {
         setWordPos(title, -1, -1);
+        return this;
     }
 
     /**
