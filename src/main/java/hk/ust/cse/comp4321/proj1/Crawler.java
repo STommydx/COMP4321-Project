@@ -42,7 +42,7 @@ public class Crawler {
     private final HashSet<URL> urls;     // the set of urls that have been visited before
     public Vector<Link> todos; // the queue of URLs to be crawled
     private int counter = 0; // to count the number of retrieved pages
-    private final List<DocumentRecord> documentRecords = new Vector<>();
+    private final List<DocumentRecord> documentRecords = new ArrayList<>();
 
     private final int maxPages; // max page
     private final int maxDepth;
