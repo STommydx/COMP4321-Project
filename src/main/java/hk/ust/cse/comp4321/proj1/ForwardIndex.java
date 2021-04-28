@@ -13,6 +13,7 @@ import java.util.Map;
 public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 
     private static final Map<String, ForwardIndex> instances = new HashMap<>();
+    private static final double TITLE_WEIGHT = 1.2;
 
     public static synchronized ForwardIndex getInstance(@NotNull String dbName) throws RocksDBException {
         ForwardIndex forwardIndex = instances.get(dbName);
@@ -58,8 +59,15 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
     public Map<String, Double> getNormalizedTfVector(int docId) throws RocksDBException, IOException, ClassNotFoundException {
         DocumentRecord documentRecord = get(docId);
         Map<String, Integer> freqTable = documentRecord != null ? documentRecord.getFreqTable() : new HashMap<>();
-        int maxFreq = freqTable.values().stream().mapToInt(x -> x).max().orElse(0);
-        return DocVectorUtils.map(freqTable, x -> 1. * x / maxFreq);
+        Map<String, Integer> titleFreqTable = documentRecord != null ? documentRecord.getTitleFreqTable() : new HashMap<>();
+
+        Map<String, Double> combinedTable = DocVectorUtils.add(
+                DocVectorUtils.map(freqTable, x -> 1. * x),
+                DocVectorUtils.map(titleFreqTable, x -> TITLE_WEIGHT * x)
+        );
+
+        double maxFreq = combinedTable.values().stream().mapToDouble(x -> x).max().orElse(0.);
+        return DocVectorUtils.map(combinedTable, x -> x / maxFreq);
     }
 
 }

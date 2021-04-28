@@ -61,8 +61,16 @@ public class PhraseQuery extends WordQuery {
                 ArrayList<Integer> nextPosList = new ArrayList<>();
 
                 for (Integer pos : oldPosList) {
-                    if (posList.contains(pos + 1)) {
-                        nextPosList.add(pos + 1);
+                    if (pos >= 0) {
+                        // last word is in body, and grow in +ve direction
+                        if (posList.contains(pos + 1)) {
+                            nextPosList.add(pos + 1);
+                        }
+                    } else {
+                        // the last word is in title, and grow in -ve direction
+                        if (posList.contains(pos - 1)) {
+                            nextPosList.add(pos - 1);
+                        }
                     }
                 }
                 if (!nextPosList.isEmpty()) {

@@ -15,8 +15,10 @@ public class DocumentRecord implements Serializable {
     private Date lastModificationDate = new Date();
     private int pageSize;
     private TreeMap<String, Integer> freqTable = new TreeMap<>();
+    private TreeMap<String, Integer> titleFreqTable = new TreeMap<>();
     private ArrayList<URL> childLinks = new ArrayList<>();
-    private TreeMap<String, ArrayList<Integer>> wordPos;
+    private final TreeMap<String, ArrayList<Integer>> wordPos = new TreeMap<>();
+    private final HashSet<URL> parentLinks = new HashSet<>();
 
     public DocumentRecord(URL url) {
         this.url = url;
@@ -57,8 +59,18 @@ public class DocumentRecord implements Serializable {
         return freqTable;
     }
 
+    public TreeMap<String, Integer> getTitleFreqTable() {
+        return titleFreqTable;
+    }
+
     public DocumentRecord setFreqTable(TreeMap<String, Integer> freqTable) {
         this.freqTable = freqTable;
+        return this;
+    }
+
+
+    public DocumentRecord setTitleFreqTable(TreeMap<String, Integer> freqTable) {
+        this.titleFreqTable = freqTable;
         return this;
     }
 
@@ -71,13 +83,37 @@ public class DocumentRecord implements Serializable {
         return this;
     }
 
-    public void setWords(Vector<String> words) {
-        wordPos = new TreeMap<>();
+    public void addParentLinks(URL parentLink) {
+        this.parentLinks.add(parentLink);
+    }
+
+    public ArrayList<URL> getParentLinks() {
+        return new ArrayList<>(parentLinks);
+    }
+
+    public DocumentRecord setWords(Vector<String> words) {
+        setWordPos(words, 0, 1);
+        return this;
+    }
+
+
+    public DocumentRecord setTitleWords(Vector<String> title) {
+        setWordPos(title, -1, -1);
+        return this;
+    }
+
+    /**
+     * Takes the word in {@code words} and store their location in the document.
+     * Location is calculated as (i + {@code initial}) * {@code stepping}, where i is the position in {@code words}
+     *
+     * @param words    {Vector<String>}
+     * @param initial  {int} the initial value for the 0-th word in {@param words}
+     * @param stepping {int} value of increment of location going down {@param words}
+     */
+    private void setWordPos(Vector<String> words, int initial, int stepping) {
         for (int i = 0; i < words.size(); ++i) {
-            ArrayList<Integer> locations = wordPos.get(words.get(i));
-            if (locations == null)
-                locations = new ArrayList<>();
-            locations.add(i); // won't repeat as iterator i only appears once for each value
+            ArrayList<Integer> locations = wordPos.getOrDefault(words.get(i), new ArrayList<>());
+            locations.add((i + initial) * stepping); // won't repeat as iterator i only appears once for each value
             wordPos.put(words.get(i), locations);
         }
     }

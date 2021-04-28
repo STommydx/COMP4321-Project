@@ -149,14 +149,29 @@ public class Crawler {
                     freqTable.put(item, freqTable.getOrDefault(item, 0) + 1);
                 }
 
+                // count title as keywords with higher weight,
+                String title = res.parse().title();
+                TreeMap<String, Integer> titleFreqTable = new TreeMap<>();
+                Vector<String> tokenisedTitle = CrawlUtils.extractTitleWords(title).stream()
+                        .filter(NLPUtils::isAlphaNumeric)
+                        .filter(NLPUtils::stopwordFilter)
+                        .map(NLPUtils::stemFilter)
+                        .collect(Collectors.toCollection(Vector::new));
+
+                for (String item : tokenisedTitle) {
+                    titleFreqTable.put(item, titleFreqTable.getOrDefault(item, 0) + 1);
+                }
+
                 // Calling document record to serialise the retrieved data
                 DocumentRecord documentRecord = new DocumentRecord(focus.url);
-                documentRecord.setTitle(res.parse().title());
-                documentRecord.setLastModificationDate(new Date(lastModified));
-                documentRecord.setFreqTable(freqTable);
-                documentRecord.setPageSize(size);
-                documentRecord.setChildLinks(linksList);
-                documentRecord.setWords(words);
+                documentRecord.setTitle(title)
+                        .setLastModificationDate(new Date(lastModified))
+                        .setFreqTable(freqTable)
+                        .setTitleFreqTable(titleFreqTable)
+                        .setPageSize(size)
+                        .setChildLinks(linksList)
+                        .setWords(words)
+                        .setTitleWords(tokenisedTitle);
 
                 documentRecords.add(documentRecord);
 

@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -31,6 +32,20 @@ public class CrawlUtils {
         while (st.hasMoreTokens()) {
             result.add(st.nextToken());
         }
+        return result;
+    }
+
+    /**
+     * Extract words from the title {@code String}
+     *
+     * @param title {String} the title
+     * @return {Vector<String>} a vector of strings in title
+     */
+    public static Vector<String> extractTitleWords(String title) {
+        Vector<String> result = new Vector<>();
+        StringTokenizer st = new StringTokenizer(title);
+        while (st.hasMoreTokens())
+            result.add(st.nextToken());
         return result;
     }
 
