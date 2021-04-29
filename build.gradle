@@ -23,6 +23,8 @@ dependencies {
     compileOnly 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.3'
     compileOnly 'org.jetbrains:annotations:20.1.0'
     annotationProcessor 'info.picocli:picocli-codegen:4.6.1'
+    testImplementation(platform('org.junit:junit-bom:5.7.1'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
 }
 
 compileJava {
@@ -31,4 +33,11 @@ compileJava {
 
 run {
     standardInput = System.in
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
