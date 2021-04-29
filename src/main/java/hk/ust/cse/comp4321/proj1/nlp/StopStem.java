@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 
 /**
- * The {@code StopStem} class
- *
- *
+ * The {@code StopStem} class do stemming and stop words removal by referencing to Porter.java and "stopwords-en.txt" respectively
  */
 public class StopStem {
     private static final String STOPWORD_RESOURCE = "stopwords-en.txt";
@@ -18,10 +16,8 @@ public class StopStem {
     private final HashSet<String> stopWords;
 
     /**
-     * Load all stop words from "stopwords-en.txt" to stopWords
-     * Report warning if failed to load the stop words
-     *
-     * @@throws IOException            if there is an I/O problem
+     * Load all stop words from "stopwords-en.txt" and report number of stop words loaded
+     * Report warning if failed to open resource file
      */
     public StopStem() {
         porter = new Porter();
@@ -46,8 +42,7 @@ public class StopStem {
 
     /**
      * Checks if the string is a stop word
-     *
-     * @param str
+     * @param str input string
      * @return {@code true} if the string is a stop word
      */
     public boolean isStopWord(String str) {
@@ -56,8 +51,7 @@ public class StopStem {
 
     /**
      * Returns the stemmed string of an input by utilizing Porter.java
-     *
-     * @param str
+     * @param str input string
      * @return the stemmed string
      */
     public String stem(String str) {

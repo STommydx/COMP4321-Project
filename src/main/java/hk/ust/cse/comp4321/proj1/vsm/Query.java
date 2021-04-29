@@ -22,8 +22,27 @@ public abstract class Query {
      */
     public abstract Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException;
 
+    /**
+     * Return a map between document ID and similarity score
+     * @param forwardIndex to get the list of keywords and respective frequency for calculation
+     * @param invertedIndex to get the document ID from a word
+     * @param docs to know documents of what docID will be involved in the calculation
+     * @return a map between document ID and similarity score
+     * @throws RocksDBException Rocksdb error
+     * @throws IOException Failed to perform IO operation
+     * @throws ClassNotFoundException Class not found
+     */
     public abstract Map<Integer, Double> getSimilarityScore(ForwardIndex forwardIndex, InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException;
 
+    /**
+     * Return a list of maps between document ID and similarity score that is related to the input query
+     * @param forwardIndex to get the list of keywords and respective frequency for calculation
+     * @param invertedIndex to get the document ID from a word
+     * @return a list of maps between document ID and similarity score
+     * @throws RocksDBException Rocksdb error
+     * @throws IOException Failed to perform IO operation
+     * @throws ClassNotFoundException Class not found
+     */
     public List<Map.Entry<Integer, Double>> query(ForwardIndex forwardIndex, InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         Set<Integer> rootSet = getRootSet(invertedIndex);
         Map<Integer, Double> similarityScore = getSimilarityScore(forwardIndex, invertedIndex, rootSet);

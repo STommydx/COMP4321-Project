@@ -13,7 +13,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * The {@code CrawlUtils} class in an utility class
+ * The {@code CrawlUtils} class is an utility class
  * that contains utility methods for assisting the crawling procedure.
  */
 public class CrawlUtils {

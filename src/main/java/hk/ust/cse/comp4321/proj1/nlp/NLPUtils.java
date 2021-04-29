@@ -15,8 +15,7 @@ public class NLPUtils {
 
     /**
      * Checks if the string is non-null and only compose of alphabets and numbers
-     *
-     * @param s
+     * @param s input string
      * @return {@code true} if the string is non-null and only compose of alphabets or numbers followed by non-white-space characters
      */
     public static boolean isAlphaNumeric(String s) {
@@ -25,8 +24,7 @@ public class NLPUtils {
 
     /**
      * Checks if the keyword is a stop word by utilizing method defined at StopStem.java
-     *
-     * @param word
+     * @param word keyword
      * @return {@code true} if the word is not a stop word
      */
     public static boolean stopwordFilter(String word) {
@@ -37,7 +35,7 @@ public class NLPUtils {
     /**
      * Returns the stemmed word for an input by utilizing method defined at StopStem.java
      *
-     * @param word
+     * @param word keyword
      * @return stemmed word
      */
     public static String stemFilter(String word) {
