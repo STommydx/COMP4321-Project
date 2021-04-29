@@ -7,34 +7,38 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DocVectorUtilsTests {
+public class QueryUtilsTests {
 
     @Test
-    void simpleVectorAddition() {
+    void simpleVectorL2Norm() {
+        Map<String, Double> v1 = new HashMap<>();
+        v1.put("janice", 1.);
+        v1.put("girl", 3.);
+        double l2norm = QueryUtils.l2Norm(v1);
+        assertEquals(l2norm, Math.sqrt(10.));
+    }
+
+    @Test
+    void simpleVectorDotProduct() {
         Map<String, Double> v1 = new HashMap<>();
         v1.put("janice", 1.);
         v1.put("girl", 3.);
         Map<String, Double> v2 = new HashMap<>();
         v2.put("beautiful", 5.);
         v2.put("girl", 4.);
-        Map<String, Double> vSum = DocVectorUtils.add(v1, v2);
-        assertEquals(vSum.size(), 3);
-        assertEquals(vSum.get("janice"), 1., 1e-6);
-        assertEquals(vSum.get("beautiful"), 5., 1e-6);
-        assertEquals(vSum.get("girl"), 7., 1e-6);
+        double dotProduct = QueryUtils.dot(v1, v2);
+        assertEquals(dotProduct, 12., 1e-6);
     }
 
     @Test
-    void simpleVectorElementwiseMultiplication() {
+    void simpleCosineSimilarity() {
         Map<String, Double> v1 = new HashMap<>();
         v1.put("janice", 1.);
         v1.put("girl", 3.);
         Map<String, Double> v2 = new HashMap<>();
         v2.put("beautiful", 5.);
         v2.put("girl", 4.);
-        Map<String, Double> vSum = DocVectorUtils.elementwiseProduct(v1, v2);
-        assertEquals(vSum.size(), 1);
-        assertEquals(vSum.get("girl"), 12., 1e-6);
+        double similarity = QueryUtils.cosineSimilarity(v1, v2);
+        assertEquals(similarity, 12. / Math.sqrt(10) / Math.sqrt(41), 1e-6);
     }
-
 }
