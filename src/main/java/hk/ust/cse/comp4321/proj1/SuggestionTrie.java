@@ -45,12 +45,12 @@ public class SuggestionTrie extends Trie<SuggestionTrie.Node> {
 
     /**
      * This method calls the {@link Trie#recursiveMerge recursiveMerge} with {@code selfFunc} to create a <i>placeholder</i>
-     * {@link Node#Node Node} storing a Map of prefix to document frequency.
+     * {@link Node} storing a Map of prefix to document frequency.
      * {@code mergeFunc} maps the list storing descendants' nodes and 1 <i>placeholder</i> node from {@code selfFunc}, and
-     * data/node of this trie, to a new {@link Node#Node Node} with document frequency being the same as the data/node of this trie,
+     * data/node of this trie, to a new {@link Node} with document frequency being the same as the data/node of this trie,
      * with {@code Map<String, Integer>} storing top {@code maxSize} amount of Map.Entry(word, document frequency of the word) with respect
      * to the document frequency of the word, where the words in the Map are from either descendants or this trie.
-     * @param maxSize max suggestions size stored in {@link Node#Node Node}
+     * @param maxSize max suggestions size stored in {@link Node}
      */
     public void buildSuggestion(int maxSize) {
         recursiveMerge(

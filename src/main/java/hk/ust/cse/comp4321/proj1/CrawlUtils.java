@@ -43,7 +43,7 @@ public class CrawlUtils {
      * Extracts words from the title {@code String}
      *
      * @param title {String} the title
-     * @return {Vector<String>} a vector of strings in title
+     * @return a vector of strings in title
      */
     public static Vector<String> extractTitleWords(String title) {
         Vector<String> result = new Vector<>();
