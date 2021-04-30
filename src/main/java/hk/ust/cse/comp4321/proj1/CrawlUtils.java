@@ -12,21 +12,25 @@ import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+/**
+ * The {@code CrawlUtils} class is an utility class
+ * that contains utility methods for assisting the crawling procedure.
+ */
 public class CrawlUtils {
 
     private CrawlUtils() {
     }
 
     /**
-     * Extract words in the web page content.
-     * note: use StringTokenizer to tokenize the result
+     * Extracts words in the web page content.
+     * <p>
+     * note: uses {@link StringTokenizer} to tokenize the result
      *
-     * @param {Document} doc
-     * @return {Vector<String>} a list of words in the web page body
+     * @param doc the document to be extracted
+     * @return a list of words in the web page body
      */
     public static Vector<String> extractWords(Document doc) {
         Vector<String> result = new Vector<>();
-        // ADD YOUR CODES HERE
         String contents = doc.body().text();
         StringTokenizer st = new StringTokenizer(contents);
         while (st.hasMoreTokens()) {
@@ -36,7 +40,7 @@ public class CrawlUtils {
     }
 
     /**
-     * Extract words from the title {@code String}
+     * Extracts words from the title {@code String}
      *
      * @param title {String} the title
      * @return {Vector<String>} a vector of strings in title
@@ -50,11 +54,12 @@ public class CrawlUtils {
     }
 
     /**
-     * Extract useful external urls on the web page.
+     * Extracts useful external urls on the web page.
+     * <p>
      * note: filter out images, emails, etc.
      *
-     * @param {Document} doc
-     * @return {Vector<String>} a list of external links on the web page
+     * @param doc the document to be extracted
+     * @return a list of external links on the web page
      */
     public static Vector<String> extractLinks(Document doc) {
         Vector<String> result = new Vector<>();
@@ -72,9 +77,10 @@ public class CrawlUtils {
     }
 
     /**
-     * To process relative url to absolute url.
-     * If it is absolute path, i.e., contains 'http' keyword, returns url.
-     * currentUrl and url shall not be empty or null
+     * Processes relative url to absolute url.
+     * <p>
+     * If it is absolute path, i.e., contains 'http' keyword, returns {@code url}.
+     * {@code currentUrl} and {@code url} shall not be empty or null
      *
      * @param currentUrl the url of the page it is processing at
      * @param url        the url retrieved in the current url
@@ -85,11 +91,13 @@ public class CrawlUtils {
     }
 
     /**
-     * To filter out unwanted junk links
-     * return false if the link is unwanted
+     * Returns {@code false} for unwanted junk links.
+     * A filter for filtering out unwanted junk links.
+     * <p>
+     * The filter will remove all opaque links and all absolute links that is not in http or https scheme.
      *
      * @param linkString the link to be processed
-     * @return if the link is wanted
+     * @return {@code true} if the link is wanted
      */
     public static boolean filterUrl(String linkString) {
         try {
@@ -101,6 +109,12 @@ public class CrawlUtils {
         }
     }
 
+    /**
+     * Removes the fragment part of an URL.
+     *
+     * @param linkString the url with fragment to be removed
+     * @return the url with the fragment part removed
+     */
     public static String removeURIFragment(String linkString) {
         try {
             URI uri = new URI(linkString);

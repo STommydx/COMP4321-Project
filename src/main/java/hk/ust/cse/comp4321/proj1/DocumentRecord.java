@@ -123,6 +123,9 @@ public class DocumentRecord implements Serializable {
         return wordPos;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

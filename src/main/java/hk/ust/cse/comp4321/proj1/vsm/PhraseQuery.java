@@ -6,12 +6,24 @@ import org.rocksdb.RocksDBException;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * The {@code PhraseQuery} class represent phrase query with an input phrase.
+ * <p>
+ *
+ * @see Query
+ * @see WordQuery
+ */
 public class PhraseQuery extends WordQuery {
 
     private final String phrase;
 
     private final List<String> listOfWords;
 
+    /**
+     * Constructs a phrase query using a string of phrase.
+     *
+     * @param phrase the query phrase
+     */
     public PhraseQuery(String phrase) {
         this.phrase = phrase;
         this.listOfWords = Arrays.asList(phrase.split(" "));
@@ -22,9 +34,9 @@ public class PhraseQuery extends WordQuery {
      *
      * @param invertedIndex to get the document ID from a word
      * @return Set of docID, empty set if the phrase does not exist in any doc
-     * @throws RocksDBException
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws RocksDBException if there is an error from RocksDB
+     * @throws IOException if there is an I/O problem
+     * @throws ClassNotFoundException if the deserialization fails
      */
     @Override
     public Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
@@ -87,6 +99,9 @@ public class PhraseQuery extends WordQuery {
         return intersectionSet;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Double> getQueryVector() {
         Map<String, Double> queryVector = new HashMap<>();
@@ -95,6 +110,9 @@ public class PhraseQuery extends WordQuery {
         return queryVector;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "\"" + phrase + "\"";

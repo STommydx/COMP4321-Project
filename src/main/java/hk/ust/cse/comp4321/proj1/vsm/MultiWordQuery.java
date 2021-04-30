@@ -10,10 +10,18 @@ public class MultiWordQuery extends WordQuery {
 
     private final List<WordQuery> queryList;
 
+    /**
+     * Constructs a query using multiple query words.
+     *
+     * @param queryList List of words in query
+     */
     public MultiWordQuery(List<WordQuery> queryList) {
         this.queryList = queryList;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         Set<Integer> set = new HashSet<>();
@@ -24,6 +32,9 @@ public class MultiWordQuery extends WordQuery {
         return set;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Double> getQueryVector() {
         // simple vector addition
@@ -33,6 +44,9 @@ public class MultiWordQuery extends WordQuery {
                 .orElse(new HashMap<>());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return queryList.toString();

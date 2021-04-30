@@ -1,11 +1,19 @@
 package hk.ust.cse.comp4321.proj1.vsm;
 
+import org.rocksdb.RocksDBException;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The {@code DocVectorUtils} class is an utility class
+ * that contains utility methods for handling document vectors
+ * to adopt vector space model in the search engine
+ */
 public class DocVectorUtils {
     private DocVectorUtils() {}
 

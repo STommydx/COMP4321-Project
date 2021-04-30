@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The {@code ForwardIndex} class represent the forward index table stored in the database
+ * which stores the basic details of each document represented by their Document ID
+ */
 public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
 
     private static final Map<String, ForwardIndex> instances = new HashMap<>();
@@ -56,6 +60,15 @@ public class ForwardIndex extends RocksIntegerMap<DocumentRecord> {
         return nextID;
     }
 
+    /**
+     * Insert crawled records to RocksDB document ID lookup table
+     *
+     * @param docId Document ID
+     * @return a map that maps the keyword with its frequency
+     * @throws RocksDBException         if there is an error from RocksDB
+     * @throws IOException              if there is an I/O problem
+     * @throws ClassNotFoundException   if the deserialization fails
+     */
     public Map<String, Double> getNormalizedTfVector(int docId) throws RocksDBException, IOException, ClassNotFoundException {
         DocumentRecord documentRecord = get(docId);
         Map<String, Integer> freqTable = documentRecord != null ? documentRecord.getFreqTable() : new HashMap<>();

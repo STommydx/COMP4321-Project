@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The {@code Query} class implements the extended boolean model by allowing specification of multiple queries connected
+ * by boolean operators (AND, OR)
+ */
 public class BooleanQuery extends Query {
 
     enum Operator {
@@ -20,6 +24,9 @@ public class BooleanQuery extends Query {
             this.operatorName = operatorName;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             return operatorName;
@@ -29,11 +36,20 @@ public class BooleanQuery extends Query {
     private final List<Query> queryList;
     private final Operator op;
 
+    /**
+     * Constructs a boolean query using a query with operator (AND, OR)
+     *
+     * @param queryList the query list
+     * @param op the operator specified in the query
+     */
     public BooleanQuery(List<Query> queryList, Operator op) {
         this.queryList = queryList;
         this.op = op;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Integer> getRootSet(InvertedIndex invertedIndex) throws RocksDBException, IOException, ClassNotFoundException {
         Set<Integer> set = new HashSet<>();
@@ -44,6 +60,9 @@ public class BooleanQuery extends Query {
         return set;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<Integer, Double> getSimilarityScore(ForwardIndex forwardIndex, InvertedIndex invertedIndex, Set<Integer> docs) throws RocksDBException, IOException, ClassNotFoundException {
         List<Map<Integer, Double>> similarityScoreList = new ArrayList<>();
@@ -74,6 +93,9 @@ public class BooleanQuery extends Query {
         return 0.;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "[" + queryList.stream()
