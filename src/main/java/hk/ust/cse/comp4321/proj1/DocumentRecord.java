@@ -91,13 +91,13 @@ public class DocumentRecord implements Serializable {
         return new ArrayList<>(parentLinks);
     }
 
-    public DocumentRecord setWords(Vector<String> words) {
+    public DocumentRecord setWords(List<String> words) {
         setWordPos(words, 0, 1);
         return this;
     }
 
 
-    public DocumentRecord setTitleWords(Vector<String> title) {
+    public DocumentRecord setTitleWords(List<String> title) {
         setWordPos(title, -1, -1);
         return this;
     }
@@ -110,7 +110,7 @@ public class DocumentRecord implements Serializable {
      * @param initial  {int} the initial value for the 0-th word in {@param words}
      * @param stepping {int} value of increment of location going down {@param words}
      */
-    private void setWordPos(Vector<String> words, int initial, int stepping) {
+    private void setWordPos(List<String> words, int initial, int stepping) {
         for (int i = 0; i < words.size(); ++i) {
             ArrayList<Integer> locations = wordPos.getOrDefault(words.get(i), new ArrayList<>());
             locations.add((i + initial) * stepping); // won't repeat as iterator i only appears once for each value

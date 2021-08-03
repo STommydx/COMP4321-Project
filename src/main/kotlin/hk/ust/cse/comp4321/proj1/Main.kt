@@ -175,12 +175,16 @@ object Main {
         return QueryResultEntry.loadQueryResult(rawResult, forwardIndex, 50)
     }
 
+    @JvmOverloads
+    @JvmStatic
     @Throws(RocksDBException::class, IOException::class, ClassNotFoundException::class)
     fun query(queryString: String, forwardDb: String = forwardDbName, invertedDb: String = invertedDbName): String {
         val resultEntries = queryRaw(queryString, forwardDb, invertedDb)
         return mapper.writeValueAsString(resultEntries)
     }
 
+    @JvmOverloads
+    @JvmStatic
     @Throws(RocksDBException::class, IOException::class, ClassNotFoundException::class)
     fun suggest(queryString: String, suggestDb: String = suggestDbName): String {
         val spaceIdx = queryString.lastIndexOf(" ")
