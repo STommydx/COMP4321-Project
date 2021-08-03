@@ -42,8 +42,7 @@ class StopStem {
             val `is` = javaClass.classLoader.getResourceAsStream(STOPWORD_RESOURCE)
             if (`is` != null) {
                 BufferedReader(InputStreamReader(`is`)).use { reader ->
-                    var line: String
-                    while (reader.readLine().also { line = it } != null) {
+                    for (line in reader.lines()) {
                         stopWords.add(line)
                     }
                 }
